@@ -1,7 +1,6 @@
 // Copyright (c) 2026 [Lime-2026]
 // Licensed under Non-Profit Open Software License 3.0 (NPOSL-3.0)
 // See LICENSE file in the project root for full license text.
-mod app;
 mod routes;
 mod handlers;
 mod models;

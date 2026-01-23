@@ -15,7 +15,6 @@ pub async fn init_conn() -> Result<Arc<DatabaseConnection>, DbErr> {
 #[allow(dead_code)]
 pub async fn get_db_conn() -> Result<Arc<DatabaseConnection>, DbErr> {
     // 只在第一次初始化时会执行 init_conn()
-    // 这里把错误转成 panic 或者返回 Result，二选一
     let conn = DB_CONN
         .get_or_try_init(|| async { init_conn().await })
         .await?;

@@ -11,7 +11,6 @@ use tokio::sync::Semaphore;
 use url::Url;
 
 pub(crate) static FETCHER: Lazy<HttpFetcher> = Lazy::new(|| {
-    // timeout=30s, global_in_flight=800（你可以按机器内存调）
     HttpFetcher::new(30, 800).expect("init HttpFetcher failed")
 });
 
@@ -46,7 +45,6 @@ fn parse_http_url(url: &str) -> Result<Url, HttpRequestError> {
     }
 }
 
-/// charset label -> Encoding
 fn encoding_from_charset_label(label: &str) -> &'static Encoding {
     let lower = label.trim().trim_matches('"').to_ascii_lowercase();
     if lower == "gb2312" || lower == "gbk" {
@@ -58,7 +56,6 @@ fn encoding_from_charset_label(label: &str) -> &'static Encoding {
     Encoding::for_label(lower.as_bytes()).unwrap_or(UTF_8)
 }
 
-/// 从响应头 Content-Type 的 charset 获取编码；取不到则默认 UTF-8（宽容）
 fn get_response_encoding(response: &reqwest::Response) -> &'static Encoding {
     let Some(ct) = response.headers().get(reqwest::header::CONTENT_TYPE) else {
         return UTF_8;
@@ -72,7 +69,6 @@ fn get_response_encoding(response: &reqwest::Response) -> &'static Encoding {
     UTF_8
 }
 
-/// bytes -> String（按指定 encoding 解码）
 fn decode_bytes(bytes: &[u8], encoding: &'static Encoding) -> Result<String, HttpRequestError> {
     let mut reader = DecodeReaderBytesBuilder::new()
         .encoding(Some(encoding))
@@ -86,18 +82,14 @@ fn decode_bytes(bytes: &[u8], encoding: &'static Encoding) -> Result<String, Htt
 }
 
 async fn read_response_text(resp: reqwest::Response) -> Result<String, HttpRequestError> {
-    // 先取 encoding（借用 resp）
     let enc = get_response_encoding(&resp);
-    // 再取 bytes（move resp）
     let bytes = resp.bytes().await?;
     decode_bytes(bytes.as_ref(), enc)
 }
 
-/// 只做全局并发限制的 Fetcher（不限制单域名）
 pub struct HttpFetcher {
     client: reqwest::Client,
     global_sem: Arc<Semaphore>,
-    // 重试参数
     retry_times: usize,
     base_backoff_ms: u64,
     max_backoff_ms: u64,

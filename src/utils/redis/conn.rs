@@ -76,7 +76,7 @@ pub(crate) async fn cache_set_json<T: Serialize>(
 
     let s = match serde_json::to_string(value) {
         Ok(v) => v,
-        Err(_) => return Ok(()), // 序列化失败不影响主流程
+        Err(_) => return Ok(()),
     };
 
     let mut conn = redis.lock().await;

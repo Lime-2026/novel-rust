@@ -17,7 +17,7 @@ pub enum AppError {
     AuthError(String),
 }
 
-// 实现IntoResponse，让Axum自动转换为HTTP响应
+
 impl axum::response::IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
         let (status, code, message) = match self {
@@ -32,7 +32,6 @@ impl axum::response::IntoResponse for AppError {
     }
 }
 
-// 实现From转换，简化错误处理
 impl From<DbErr> for AppError {
     fn from(err: DbErr) -> Self {
         AppError::DbError(err)

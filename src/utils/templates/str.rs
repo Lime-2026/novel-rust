@@ -45,23 +45,17 @@ impl Function for SortArrayFunction {
 pub struct SubstrFunction;
 impl Function for SubstrFunction {
     fn call(&self, args: &HashMap<String, Value>) -> TeraResult<Value> {
-        // 1. 手动校验必选参数（替代 FunctionSignature 的作用）
         let title = args
             .get("name")
             .ok_or_else(|| tera::Error::msg("format_novel_title 缺少必选参数 name（小说标题）"))?
             .as_str()
             .ok_or_else(|| tera::Error::msg("name 参数必须是字符串类型"))?;
-
-        // 2. 处理可选参数（手动设置默认值）
         let max_len = args
             .get("max_len")
-            // 手动处理类型转换失败的情况
             .map(|v| v.as_u64().ok_or(tera::Error::msg("max_len 必须是数字")))
-            // 转换成功则转为 usize，失败/无参数则用默认值 20
-            .transpose()? // 把 Result<Option<u64>, Error> 转为 Option<Result<u64, Error>>
+            .transpose()? 
             .unwrap_or(20) as usize;
-
-        // 3. 核心业务逻辑（和之前一致）
+        
         let formatted_title = if title.len() > max_len {
             format!("{}...", &title[0..max_len])
         } else {
