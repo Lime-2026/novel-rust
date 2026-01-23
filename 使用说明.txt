@@ -1,0 +1,100 @@
+.env 配置说明
+
+DATABASE_URL=mysql://[用户名]:[密码]@[数据库IP]:[数据库端口]/[数据库名]?charset=utf8mb4		
+REDIS_URL=redis://[用户名:密码@]主机:端口/[数据库编号]
+PORT=[运行端口]
+
+
+conf.json 配置说明
+
+{
+  "site_name": "乌哈",	// 站点名字
+  "site_url": "http://127.0.0.1:8080",	// 本站域名 CDN时用到
+  "txt_url": "D:/GoStore/queniao/files/article/txt",	// txt本地存储路径或远程获取链接
+  "sys_ver": 2.4,	// 系统版本 杰奇1.7(1.7)  船说优化与杰奇2.4(2.4) 船说分表(6.0) 多选(7.0)
+  "root_dir": "D:/GoStore/queniao",	// 指向files上级文件夹目录 非主站可不填
+  "remote_img_url": "http://qc.cc/files/article/image",	// 图片访问地址
+  "enable_down": true,	// 启用下载 (没做)
+  "theme_dir": "default",	// 模板
+  "commend_ids": "1,2,3,4,9,10,77,51,154,645,14,545",	// 首页推荐小说ID
+  "is_3in1": false,	// 3合一模板 (待测 预计1.0稳定)
+  "category_per_page": 20,	// 分类页展示多少本小说
+  "read_page_split_mode": 1,	// 是否启用章节分页 0不启用 1按行数分页 2按字数分页
+  "read_page_split_lines": 50,	// 章节分页值
+  "vote_perday": 5,		// 推荐票(暂时无用)
+  "index_list_num": 100,	 // 目录页每页多少章节 
+  "prefix": "jieqi_",	// 数据库表前缀 杰奇(jieqi_)  船说优化|船说分表(shipsay_) 多选(dx_)
+  "rewrite": {
+    "info_url": "/book/{id}.html",		// 信息页伪静态可用：{id} {sid}也就是传统的id/1000
+    "chapter_url": "/book/{id}/{cid}/{page}.html",	// 章节页伪静态 {id} {sid}也就是传统的id/1000  {cid} 章节id {page} 分页表示 {s_cid} 这个是兼容船说的章节分页 如果使用{cid}与{page}不允许使用  未开启分页的情况下禁用{page}与{s_cid}
+    "sort_url": "/sort/{code}/{page}.html",	// 分类页伪静态 {code}分类拼音 {page}页码 {id}分类ID
+    "top_url": "/top.html",	// 排行单页
+    "history_url": "/history.html",	// 历史界面
+    "index_list_url": "/book/{id}/{page}.html",	// 目录页{id} {sid} {page} 即使不分页这里也要有
+    "author_url": "/author/{name}",	// 作者伪静态 {name}
+    "complete_url": "",	// 完本伪静态 暂时未兼容
+    "rank_url": "/rank/{code}.html",	// 排行内页 {code}
+    "search_url": "/search.html"	// 搜索伪静态
+  },
+  "sort_arr": [
+    {
+      "code": "dushi",
+      "caption": "都市小说"
+    },
+    {
+      "code": "yanqing",
+      "caption": "言情小说"
+    },
+    {
+      "code": "wuxia",
+      "caption": "武侠小说"
+    },
+    {
+      "code": "kehuan",
+      "caption": "科幻小说"
+    },
+    {
+      "code": "lishi",
+      "caption": "历史军事"
+    },
+    {
+      "code": "kongbu",
+      "caption": "恐怖灵异"
+    },
+    {
+      "code": "wangyou",
+      "caption": "网游竞技"
+    },
+    {
+      "code": "qita",
+      "caption": "其它小说"
+    }
+  ],
+  "is_multiple": true,	// 是否混淆ID
+  "confusion_value": 12,	// 混淆值
+  "confusion_algorithm": "^",	// 混淆算法 + * ^
+  "filter": "敏感词1|敏感词2",	// 暂时未兼容
+  "link": "https://link.example.com",	// 友情链接 暂时未兼容
+  "is_report": true,	// 章节报错 未兼容
+  "report_time": 86400,	// 报错间隔 
+  "search": {
+    "limit": 50,	// 每页条数 最大100 即使超过100也是100 
+    "min": 2,	// 最小搜索词
+    "time": 3600,	// 缓存时间
+    "is_record": true,	// 记录搜索词 未兼容
+    "delay": 0	// -1 不允许搜索 0不限制 ＞0 则是间隔多少秒允许搜索
+  },
+  "cache": {
+    "home": 300,	// 缓存时间 单位(秒)
+    "info": 600,
+    "chapter": 900,
+    "sort": 1200,
+    "rank": 1800,
+    "other": 3600
+  }
+}
+
+
+注意事项：
+	1. 伪静态不要冲突 比如小说信息页/book/{sid}/{id} 然后后边目录页又来了个 /book/{id}/{page} 这就是典型的冲突 程序会直接崩溃 你要把所有{xxx}都要看成相同的
+	2. 
