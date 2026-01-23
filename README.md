@@ -7,3 +7,6 @@
 - 🔄 允许修改和分发，但需遵循相同协议约束
 
 完整协议文本见 [LICENSE](LICENSE) 文件
+
+# Linux编译注意
+- 需要在Cargo.toml中把# openssl = { version = "0.10.75", features = ["vendored"] } 注释去掉
