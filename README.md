@@ -10,3 +10,6 @@
 
 # Linux编译注意
 - 需要在Cargo.toml中把# openssl = { version = "0.10.75", features = ["vendored"] } 注释去掉
+
+# 使用说明
+- 自行阅读 [使用说明](使用说明.txt) 文件
