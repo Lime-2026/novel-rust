@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>"{{ keyword }}"的搜索结果 - {{ SITE_NAME }}</title>
+  <meta name="description" content="{{ keyword }}的搜索结果，最新更新{{ keyword }}小说尽在{{ SITE_NAME }}">
+  <link rel="stylesheet" href="/static/{{theme}}/css/base.css">
+  <link rel="stylesheet" href="/static/{{theme}}/css/rank.css">
+  <link rel="stylesheet" href="/static/{{theme}}/css/sort.css">
+</head>
+<body>
+{% include "default/components/header.html" %}
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">首页</a>
+    <span>></span>
+    <a href="{{ rewrite(type='search') }}">搜索</a>
+    <span>></span>
+    <span>"{{ keyword }}"的搜索结果</span>
+  </div>
+  <div class="rank-nav search-nav">
+    {% if rows|length > 0 %}搜索<span>"{{ keyword }}"</span>的结果共{{ rows|length }}条 {% else %}暂无<span>"{{ keyword }}"</span>小说，为您推荐其它小说！{% endif %}
+  </div>
+  {% if rows|length > 0 %}
+  <div class="novel-list">
+    {% for novel in rows %}
+    <div class="novel-card">
+      <a href="{{ novel.info_url }}">
+        <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}" class="novel-cover">
+      </a>
+      <div class="novel-info">
+        <a href="{{ novel.info_url }}" class="novel-title">{{ novel.articlename }}</a>
+        <div class="novel-meta">
+          <a href="{{ novel.author_url }}">作者：{{ novel.author|default(value='未知') }}</a>
+          <a href="{{ novel.last_url }}">最新：{{ novel.lastchapter|default(value='暂无最新章节') }}</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="novel-list">
+    {% for novel in search_no_rows %}
+    <div class="novel-card">
+      <a href="{{ novel.info_url }}">
+        <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}" class="novel-cover">
+      </a>
+      <div class="novel-info">
+        <a href="{{ novel.info_url }}" class="novel-title">{{ novel.articlename }}</a>
+        <div class="novel-meta">
+          <a href="{{ novel.author_url }}">作者：{{ novel.author|default(value='未知') }}</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</main>
+{% include "default/components/footer.html" %}
+<script src="/static/{{theme}}/js/base.js"></script>
+<script src="/static/{{theme}}/js/sort.js"></script>
+</body>
+</html>

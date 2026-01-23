@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ SITE_NAME }} - 优质小说阅读平台</title>
+    <link rel="stylesheet" href="/static/{{theme}}/css/base.css">
+    <link rel="stylesheet" href="/static/{{theme}}/css/index.css">
+
+</head>
+<body>
+{% include "default/components/header.html" %}
+
+<main class="container">
+    <!-- 编辑推荐区域 - Flex 布局 -->
+    <section class="section">
+        <h2 class="section-title">
+            <span class="icon icon-star"></span> 编辑推荐
+        </h2>
+        <div class="novel-flex">
+            {% if commend | length > 0 %}
+            {% for novel in commend %}
+            <a href="{{ novel.info_url }}" class="novel-card">
+                <div class="novel-cover">
+                    {% if novel.img_url %}
+                    <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}">
+                    {% else %}
+                    <div class="placeholder">📖</div>
+                    {% endif %}
+                    {% if novel.isfull == "完结" %}
+                    <span class="novel-tag tag-finish">完结</span>
+                    {% else %}
+                    <span class="novel-tag tag-serial">连载</span>
+                    {% endif %}
+                </div>
+                <div class="novel-info">
+                    <h3 class="novel-title line-clamp-1">{{ novel.articlename }}</h3>
+                    <p class="novel-meta">{{ novel.author }}</p>
+                </div>
+            </a>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">暂无推荐小说</div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- 热门排行区域 - Flex 布局 -->
+    <section class="section">
+        <h2 class="section-title">
+            <span class="icon icon-fire"></span> 热门排行
+        </h2>
+        <div class="novel-flex">
+            {% if popular | length > 0 %}
+            {% for novel in popular %}
+            <a href="{{ novel.info_url }}" class="novel-card">
+                <div class="novel-cover">
+                    {% if novel.img_url %}
+                    <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}">
+                    {% else %}
+                    <div class="placeholder">📖</div>
+                    {% endif %}
+                </div>
+                <div class="novel-info">
+                    <h3 class="novel-title line-clamp-1">{{ novel.articlename }}</h3>
+                    <p class="novel-meta">{{ novel.author }}</p>
+                    <p class="novel-meta-light">{{ novel.lastchapter }}</p>
+                </div>
+            </a>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">暂无热门小说</div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- 分类浏览区域 - Flex 布局 -->
+    <section class="section">
+        <h2 class="section-title">
+            <span class="icon icon-category"></span> 分类浏览
+        </h2>
+        <div class="category-section">
+            {% if sortarr | length > 0 %}
+            {% for sort_id, novels in sortarr %}
+            {% if novels | length > 0 %}
+            <div class="category-card">
+                <h3 class="category-title">
+                    <span class="line"></span>
+                    {{ novels.0.sortname | default(value="分类 " ~ sort_id) }}
+                </h3>
+                <div class="category-flex">
+                    {% for novel in novels %}
+                    <a href="{{ novel.info_url }}" class="category-item">
+                        <div class="category-cover">
+                            {% if novel.img_url %}
+                            <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}">
+                            {% else %}
+                            <div class="placeholder">📖</div>
+                            {% endif %}
+                        </div>
+                        <span class="category-name line-clamp-1">{{ novel.articlename }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                <div class="more-link">
+                    <a href="/category/{{ sort_id }}">查看更多 →</a>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">暂无分类小说</div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- 最新更新+发布双列 -->
+    <section class="section">
+        <div class="double-column">
+            <div class="column-card">
+                <h2 class="section-title">
+                    <span class="icon icon-update"></span> 最新更新
+                </h2>
+                <ul class="novel-list">
+                    {% if lastupdate | length > 0 %}
+                    {% for novel in lastupdate %}
+                    <li class="novel-list-item">
+                        <a href="{{ novel.info_url }}" class="list-cover">
+                            {% if novel.img_url %}
+                            <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}">
+                            {% else %}
+                            <div class="placeholder">📖</div>
+                            {% endif %}
+                        </a>
+                        <div class="list-info">
+                            <a href="{{ novel.info_url }}">
+                                <h3 class="list-title line-clamp-1">{{ novel.articlename }}</h3>
+                            </a>
+                            <p class="list-meta">作者：{{ novel.author }}</p>
+                            <p class="list-meta-flex">
+                                <span>最新章节：{{ novel.lastchapter | default(value="暂无") }}</span>
+                                <span>{{ novel.lastupdate_cn }}</span>
+                            </p>
+                        </div>
+                    </li>
+                    {% endfor %}
+                    {% else %}
+                    <li class="list-empty-state">暂无更新记录</li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="column-card">
+                <h2 class="section-title">
+                    <span class="icon icon-publish"></span> 最新发布
+                </h2>
+                <ul class="novel-list">
+                    {% if postdate | length > 0 %}
+                    {% for novel in postdate %}
+                    <li class="novel-list-item">
+                        <a href="{{ novel.info_url }}" class="list-cover">
+                            {% if novel.img_url %}
+                            <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}">
+                            {% else %}
+                            <div class="placeholder">📖</div>
+                            {% endif %}
+                        </a>
+                        <div class="list-info">
+                            <a href="{{ novel.info_url }}">
+                                <h3 class="list-title line-clamp-1">{{ novel.articlename }}</h3>
+                            </a>
+                            <p class="list-meta">作者：{{ novel.author }}</p>
+                            <p class="list-meta">字数：{{ novel.words_w | default(value="0") }} 万字</p>
+                        </div>
+                    </li>
+                    {% endfor %}
+                    {% else %}
+                    <li class="list-empty-state">暂无新发布小说</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </section>
+</main>
+{% include "default/components/footer.html" %}
+<script src="/static/{{theme}}/js/base.js"></script>
+</body>
+</html>

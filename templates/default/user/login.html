@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录 - {{SITE_NAME}}</title>
+    <link rel="stylesheet" href="/static/{{theme}}/css/base.css">
+    <link rel="stylesheet" href="/static/{{theme}}/css/user.css">
+</head>
+<body>
+
+<div class="page-container">
+    {% include "default/components/header.html" %}
+    <div class="page-content">
+        <div class="register-container">
+            <h1 class="register-title">用户登录</h1>
+            <div class="form-group">
+                <label class="form-label" for="username">用户名</label>
+                <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        class="form-input"
+                        placeholder="请输入用户名（6-32位字母/数字/下划线）"
+                        autocomplete="off"
+                        required
+                >
+                <div class="error-tip" id="usernameError">用户名格式错误</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password">密码</label>
+                <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-input"
+                        placeholder="请输入密码（6-32位）"
+                        required
+                >
+                <div class="error-tip" id="passwordError">密码长度需最少6位</div>
+            </div>
+            <button type="submit" class="register-btn" id="registerBtn">登录</button>
+            <div class="login-link">
+                还没有账号？<a href="/register">立即注册</a>
+            </div>
+        </div>
+    </div>
+    {% include "default/components/footer.html" %}
+</div>
+<script src="/static/{{theme}}/js/base.js"></script>
+<script src="/static/common/js/user.js"></script>
+<script>
+    const username = document.getElementById('username');
+    const password = document.getElementById('password');
+    const submitBtn = document.getElementById('registerBtn');
+    const usernameError = document.getElementById('usernameError');
+    const passwordError = document.getElementById('passwordError');
+    password.addEventListener('blur', function () {
+        passwordError.classList.toggle('show', this.value.length < 6 || this.value.length > 20);
+    });
+    username.addEventListener('keydown',function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            validateLoginPageForm();
+        }
+    })
+    password.addEventListener('keydown',function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            validateLoginPageForm();
+        }
+    })
+    submitBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        validateLoginPageForm();
+    });
+
+    function validateLoginPageForm() {
+        let isInvalid = false;
+        if (!/^[a-zA-Z0-9_]{6,32}$/.test(username.value.trim())) {
+            usernameError.classList.add('show');
+            isInvalid = true;
+        }
+        if (password.value.length < 6) {
+            passwordError.classList.add('show');
+            isInvalid = true;
+        }
+        if (isInvalid) {
+            showErrorTip('表单填写有误，请检查');
+            document.querySelector('.error-tip.show')?.scrollIntoView({behavior: 'smooth'});
+            return false
+        }
+        // 发起请求
+        post_login(
+            username.value.trim(),
+            password.value.trim(),
+        ).then((data) => {
+            if (data !== "success") {
+                showErrorTip(data);
+                return false;
+            }
+            location.href = "/bookcase";
+        });
+    }
+</script>
+</body>
+</html>

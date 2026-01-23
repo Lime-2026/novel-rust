@@ -1,0 +1,48 @@
+<header>
+    <div class="container">
+        <div class="header-inner">
+            <a href="/" class="site-logo">{{ SITE_NAME }}</a>
+            <nav class="desktop-nav">
+                <a href="/">首页</a>
+                <div class="sort-dropdown">
+                    <span class="sort-dropdown-trigger" id="desktopSortBtn">分类 ▾</span>
+                    <div class="sort-dropdown-content">
+                        {% for sort in sort_arr() %}
+                        <a href="{{ sort.url }}">{{ sort.caption }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <a href="{{ rewrite(type='top') }}">排行榜</a>
+                <a href="{{ rewrite(type='history') }}">浏览历史</a>
+                <form class="desktop-search-form" action="{{ rewrite(type='search') }}" method="get">
+                    <input type="text" name="keyword" placeholder="搜索小说..." required>
+                    <button type="submit">搜索</button>
+                </form>
+                <div class="login"></div>
+            </nav>
+            <button class="menu-btn" id="menuBtn">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <nav class="mobile-nav" id="mobileMenu">
+            <a href="/">首页</a>
+            <div class="sort-dropdown mobile-sort-dropdown">
+                <span class="sort-dropdown-trigger" id="mobileSortBtn">分类 ▾</span>
+                <div class="sort-dropdown-content">
+                    {% for sort in sort_arr() %}
+                    <a href="{{ sort.url }}">{{ sort.caption }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <a href="{{ rewrite(type='top') }}">排行榜</a>
+            <a href="{{ rewrite(type='history') }}">浏览历史</a>
+            <div class="login"></div>
+            <form class="mobile-search-form" action="{{ rewrite(type='search') }}" method="get">
+                <input type="text" name="keyword" placeholder="搜索小说..." required>
+                <button type="submit">搜索</button>
+            </form>
+        </nav>
+    </div>
+</header>

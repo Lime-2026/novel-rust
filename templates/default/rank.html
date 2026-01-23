@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} - {{ SITE_NAME }}</title>
+  <meta name="description" content="{{ title }}小说大全，最新更新{{ title }}小说尽在{{ SITE_NAME }}">
+  <link rel="stylesheet" href="/static/{{theme}}/css/base.css">
+  <link rel="stylesheet" href="/static/{{theme}}/css/rank.css">
+  <link rel="stylesheet" href="/static/{{theme}}/css/sort.css">
+</head>
+<body>
+{% include "default/components/header.html" %}
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">首页</a>
+    <span>></span>
+    <a href="{{ rewrite(type='top') }}">总排行榜</a>
+    <span>></span>
+    <span>{{ title }}</span>
+  </div>
+  <div class="rank-nav">
+    {% for nav in rank_nav %}
+    <a href="{{ nav.url }}" class="rank-nav-item {% if nav.select %}active{% endif %}">
+      {{ nav.title }}
+    </a>
+    {% endfor %}
+  </div>
+  {% if rows|length > 0 %}
+  <div class="novel-list">
+    {% for novel in rows %}
+    <div class="novel-card">
+      <a href="{{ novel.info_url }}">
+        <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}" class="novel-cover">
+      </a>
+      <div class="novel-info">
+        <a href="{{ novel.info_url }}" class="novel-title">{{ novel.articlename }}</a>
+        <div class="novel-meta">
+          <a href="{{ novel.author_url }}">作者：{{ novel.author|default(value='未知') }}</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-list">
+    暂无{{ title }}小说，敬请期待！
+  </div>
+  {% endif %}
+</main>
+{% include "default/components/footer.html" %}
+<script src="/static/{{theme}}/js/base.js"></script>
+<script src="/static/{{theme}}/js/sort.js"></script>
+</body>
+</html>

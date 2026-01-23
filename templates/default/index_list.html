@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ detail.articlename | default(value="未知小说") }} - {{ SITE_NAME }}</title>
+    <link rel="stylesheet" href="/static/{{theme}}/css/base.css">
+    <link rel="stylesheet" href="/static/{{theme}}/css/info.css">
+</head>
+<body>
+{% include "default/components/header.html" %}
+
+<main class="container">
+    <div class="breadcrumb">
+        <a href="/">首页</a>
+        <span>></span>
+        <a href="{{ detail.sort_url }}">{{ detail.sortname }}</a>
+        <span>></span>
+        <a href="{{detail.info_url}}">{{ detail.articlename }}</a>
+        <span>></span>
+        <span>章节列表</span>
+    </div>
+    <div class="info-card">
+        <div class="info-cover">
+            {% if detail.img_url %}
+            <img src="{{ detail.img_url }}" alt="{{ detail.articlename }}">
+            {% else %}
+            <div class="info-placeholder">📖</div>
+            {% endif %}
+        </div>
+        <div class="info-content">
+            <h1 class="info-title">{{ detail.articlename | default(value="未知小说") }}</h1>
+
+            <div class="info-meta">
+                <span>作者: {{ detail.author }}</span>
+                <span>分类: {{ detail.sortname }}</span>
+                <span>字数: {{ detail.words_w }}万字</span>
+                <span>最后更新: {{ detail.lastupdate | date(format="%Y-%m-%d %H:%M:%S") }}</span>
+            </div>
+
+            <div class="intro-box">
+                <div class="intro-content" id="introContent">
+                    {{ detail.intro | default(value="暂无简介...") | safe }}
+                </div>
+                <button class="toggle-intro" id="toggleIntroBtn">展开全部</button>
+            </div>
+        </div>
+    </div>
+    <div class="section">
+        <h2 class="section-title">📑 最近更新</h2>
+        <div class="chapters-card">
+            {% if last_chapters | length > 0 %}
+            <div class="chapters-grid">
+                {% for chapter in last_chapters %}
+                <a href="{{ chapter.read_url }}" class="chapter-item">
+                    {{ chapter.chaptername | default(value="未知章节") }}
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-tip">暂无最近更新章节</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="section">
+        <h2 class="section-title">📚 章节列表 (第{{ page }}页)</h2>
+        <div class="chapters-card">
+            {% if cut_chapters | length > 0 %}
+            <div class="chapters-grid">
+                {% for chapter in cut_chapters %}
+                <a href="{{ chapter.read_url }}" class="chapter-item">
+                    {{ chapter.chaptername | default(value="未知章节") }}
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-tip">暂无章节数据</div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="section">
+        <div class="chapters-card">
+            <div class="pagination-wrapper">
+                <a href="{{prev_url}}" class="pagination-btn {% if prev_url == detail.info_url %}pagination-btn--disabled{% endif %}">
+                    上一页
+                </a>
+                <div class="pagination-select-wrap">
+                    <select id="chapterSelect" class="pagination-select" onchange="self.location.href=options[selectedIndex].value">
+                        {% for page_url in page_urls %}
+                        <option value="{{ page_url.url }}" {% if page_url.select %}selected="selected"{% endif %}>
+                            第{{ page_url.page }}页
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <a href="{{next_url}}" class="pagination-btn {% if next_url == detail.info_url %}pagination-btn--disabled{% endif %}">
+                    下一页
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include "default/components/footer.html" %}
+<script src="/static/{{theme}}/js/base.js"></script>
+<script>
+    // 简介折叠逻辑
+    const introContent = document.getElementById('introContent');
+    const toggleBtn = document.getElementById('toggleIntroBtn');
+
+    // 简单判断是否需要折叠
+    if (introContent.scrollHeight <= 120) {
+        toggleBtn.style.display = 'none';
+    } else {
+        toggleBtn.addEventListener('click', function() {
+            introContent.classList.toggle('expanded');
+            this.textContent = introContent.classList.contains('expanded') ? '收起简介' : '展开全部';
+        });
+    }
+</script>
+</body>
+</html>

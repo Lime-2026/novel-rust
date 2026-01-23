@@ -1,0 +1,273 @@
+:root {
+    --primary: #4f46e5;
+    --primary-light: #818cf8;
+    --bg-color: #f9fafb;
+    --card-bg: #ffffff;
+    --text-main: #1f2937;
+    --text-sub: #6b7280;
+    --primary-dark: #4338ca;
+    --text-light: #9ca3af;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --radius: 8px;
+    --border-color: #f3f4f6;
+    --disabled-bg: #e5e7eb !important;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 面包屑导航 */
+.breadcrumb {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+}
+.breadcrumb a {
+    color: var(--text-sub);
+    text-decoration: none;
+}
+.breadcrumb a:hover {
+    color: var(--primary);
+}
+.breadcrumb span {
+    color: var(--text-sub);
+}
+
+/* --- 2. 复用首页 Header/Footer 样式 (结构不变) --- */
+header {
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow);
+    /*position: sticky;*/
+    /*top: 0;*/
+    /*z-index: 100;*/
+}
+
+.header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.site-logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.desktop-nav {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.desktop-nav a {
+    color: var(--text-sub);
+    font-size: 14px;
+}
+
+.desktop-nav a:hover {
+    color: var(--primary);
+}
+
+.menu-btn {
+    display: none;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    z-index: 101;
+}
+
+.menu-btn .icon-bar {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: var(--text-sub);
+    margin: 6px auto;
+    transition: 0.3s;
+}
+
+.mobile-nav {
+    background-color: var(--card-bg);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    position: absolute;
+    top: 60px;
+    border-radius: var(--radius);
+    width: 100%;
+    z-index: 100;
+    left: 0;
+    border-top: 1px solid #f3f4f6;
+}
+
+.mobile-nav.show {
+    display: flex !important;
+}
+
+.mobile-nav a {
+    color: var(--text-sub);
+    font-size: 14px;
+    padding: 4px 0;
+}
+
+footer {
+    background-color: #1f2937;
+    color: #ffffff;
+    padding: 16px 0;
+    margin-top: 40px;
+}
+
+.footer-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.footer-logo {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.footer-desc, .footer-copyright {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+@media (min-width: 768px) {
+    .mobile-nav.show{display: none !important;}
+}
+
+@media (max-width: 768px) {
+    .desktop-nav { display: none; }
+    .menu-btn {display: block;}
+    .breadcrumb {display: none}
+    .container{padding: 0 16px;}
+}
+
+/* 通用折叠容器样式 */
+.sort-dropdown {
+    position: relative;
+    display: inline-block;
+    margin: 0 8px;
+    /* 让文本和其他导航链接对齐 */
+    vertical-align: middle;
+}
+
+/* 核心修改：文本触发样式（去掉按钮样式，改成普通文字） */
+.sort-dropdown-trigger {
+    color: inherit; /* 继承导航栏文字颜色 */
+    cursor: pointer; /* 鼠标移上去变手型，提示可点击 */
+    font-size: 14px;
+    padding: 8px 4px;
+    display: inline-block;
+    /* 小箭头和文字对齐 */
+    line-height: 1;
+}
+
+/* hover效果：文字变色，提示可点击 */
+.sort-dropdown-trigger:hover {
+    color: #4f46e5; /* 自定义hover颜色，和原有主题匹配 */
+    text-decoration: none;
+}
+
+/* 折叠列表样式（默认隐藏，样式微调） */
+.sort-dropdown-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    min-width: 120px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    padding: 8px 0;
+    z-index: 999;
+    display: none;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: all 0.2s ease;
+    /* 桌面端列表和文本对齐 */
+    margin-top: 4px;
+}
+
+.sort-dropdown-content.show {display: block;opacity: 1;transform: translateY(0);}
+.sort-dropdown-content a {display: block;padding: 8px 16px;color: #333;text-decoration: none;white-space: nowrap;}
+.sort-dropdown-content a:hover {background-color: #f5f5f5;}
+.mobile-sort-dropdown {display: block;margin: 8px 0;border-bottom: 1px solid #eee; /* 加分割线，区分其他导航 */padding-bottom: 8px;}
+.mobile-sort-dropdown .sort-dropdown-trigger {width: 100%;display: block;padding: 8px 0;font-size: 16px;}
+.mobile-sort-dropdown .sort-dropdown-content {position: static;box-shadow: none;border: 1px solid #eee;margin-top: 8px;width: 100%;}
+.mobile-search-form button {padding: 0 36px;background-color: var(--primary);color: white;border: none;cursor: pointer;transition: background-color 0.2s;}
+.mobile-search-form button:hover {background-color: var(--primary-dark);}
+.mobile-search-form {display: flex;gap: 0;height: 40px;border-radius: 16px;overflow: hidden;border: 1px solid var(--primary);}
+.mobile-search-form input {flex: 1;padding: 0 12px;border: none;outline: none;font-size: 15px;}
+.desktop-search-form {display: flex;gap: 0;height: 32px;border-radius: 16px;overflow: hidden;}
+.desktop-search-form input {padding: 0 12px;border: 1px solid var(--primary);border-right: none;outline: none;font-size: 14px;width: 180px;border-radius: 16px 0 0 16px;}
+.desktop-search-form button {padding: 0 16px;background-color: var(--primary);color: white;border: none;cursor: pointer;font-size: 14px;transition: background-color 0.2s;}
+.desktop-search-form button:hover {background-color: var(--primary-dark);}
+/* 全局Tip弹窗核心样式 */
+#globalTip {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    z-index: 9999;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    max-width: 80%;
+    background-color: rgba(0,0,0,.8);
+}
+#globalTip.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+#globalTip.success {
+    color: #fff;
+}
+#globalTip.error {
+    color: #fff;
+}
+#globalTip.info {
+    color: #fff;
+}
+@media (max-width: 480px) {
+    #globalTip {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}

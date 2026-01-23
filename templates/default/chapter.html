@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ detail.articlename }} - {{ chapter.chaptername }} - {{ SITE_NAME }}</title>
+    <link rel="stylesheet" href="/static/{{theme}}/css/base.css">
+    <link rel="stylesheet" href="/static/{{theme}}/css/reader.css">
+</head>
+<body>
+{% include "default/components/header.html" %}
+<main class="container">
+    <div class="breadcrumb">
+        <a href="/">首页</a>
+        <span>></span>
+        <a href="{{ detail.sort_url }}">{{ detail.sortname }}</a>
+        <span>></span>
+        <a href="{{detail.info_url}}">{{ detail.articlename }}</a>
+        <span>></span>
+        <span>{{ chapter.chaptername }}</span>
+    </div>
+    <div class="read-nav">
+        <div class="read-nav-inner">
+            <div class="nav-title">
+                {{ chapter.chaptername }}
+            </div>
+            <div class="nav-btn-group">
+                <a href="{{ prev_url }}" class="nav-btn {% if prev_url == detail.info_url %}nav-btn--disabled{% endif %}">
+                    上一章
+                </a>
+                <a href="{{ detail.info_url }}" class="nav-btn">
+                    详情页
+                </a>
+                <a href="{{ next_url }}" class="nav-btn {% if next_url == detail.info_url %}nav-btn--disabled{% endif %}">
+                    下一章
+                </a>
+                <button class="nav-btn" id="openSidebarBtn">
+                    章节列表
+                </button>
+                <button class="nav-btn" id="openReadSettingBtn">
+                    阅读设置
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="chapter-content-wrap">
+        <div class="chapter-content">
+            {{ chapter_content | safe }}
+        </div>
+    </div>
+    <div class="pagination-bar">
+        {% if prev_page_url != '' %}
+        <a href="{{ prev_page_url }}" class="page-btn {% if prev_page_url == '' %}page-btn--disabled{% endif %}">
+            上一页
+        </a>
+        {% else %}
+        <a href="{{ prev_url }}" class="page-btn">
+            上一章
+        </a>
+        {% endif %}
+        <a href="{{ info_url }}" class="page-btn">
+            详情页
+        </a>
+        {% if next_page_url != '' %}
+        <a href="{{ next_page_url }}" class="page-btn {% if next_page_url == '' %}page-btn--disabled{% endif %}">
+            下一页
+        </a>
+        {% else %}
+        <a href="{{ next_url }}" class="page-btn">
+            下一章
+        </a>
+        {% endif %}
+    </div>
+    <div class="chapters-sidebar" id="chaptersSidebar">
+        <div class="sidebar-header">
+            <h3 class="sidebar-title">{{ detail.articlename }} 章节列表</h3>
+            <button class="close-sidebar" id="closeSidebarBtn">×</button>
+        </div>
+        <div class="chapters-list">
+            {% for item in chapters %}
+            <a href="{{ item.read_url }}" class="chapter-item {% if item.chapterid == chapter.chapterid %}active{% endif %}">
+                {{ item.chaptername }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="settings-modal" id="settingsModal">
+        <div class="sidebar-header">
+            <h3 class="sidebar-title">阅读设置</h3>
+            <button class="close-sidebar" id="closeSettingsBtn">×</button>
+        </div>
+        <div class="settings-content">
+            <div class="setting-item">
+                <h4 class="setting-title">文本大小</h4>
+                <div class="font-size-controls">
+                    <button class="font-btn" data-size="14px">A-</button>
+                    <button class="font-btn" data-size="16px">A</button>
+                    <button class="font-btn" data-size="18px">A+</button>
+                    <button class="font-btn" data-size="20px">A++</button>
+                    <button class="font-btn" data-size="22px">A+++</button>
+                </div>
+                <input type="range" min="14" max="22" step="1" class="font-size-slider" id="fontSizeSlider">
+            </div>
+            <div class="setting-item">
+                <h4 class="setting-title">背景主题</h4>
+                <div class="theme-controls">
+                    <button class="theme-btn" data-bg="#ffffff" data-text="#374151">纯白</button>
+                    <button class="theme-btn" data-bg="#f5f0e1" data-text="#374151">米色</button>
+                    <button class="theme-btn" data-bg="#f0f0f0" data-text="#374151">浅灰</button>
+                    <button class="theme-btn" data-bg="#2d3748" data-text="#e2e8f0">夜间</button>
+                    <button class="theme-btn" data-bg="#1a202c" data-text="#f7fafc">深色</button>
+                </div>
+            </div>
+            <div class="setting-actions">
+                <button class="reset-btn" id="resetSettingsBtn">恢复默认设置</button>
+            </div>
+        </div>
+    </div>
+    <div class="mask" id="mask"></div>
+</main>
+{% include "default/components/footer.html" %}
+<script src="/static/{{theme}}/js/base.js"></script>
+<script src="/static/{{theme}}/js/reader.js"></script>
+<script src="/static/common/js/history.js"></script>
+<script>
+    lastread.set('{{detail.info_url}}','{{Uri}}','{{detail.articlename}}','{{chapter.chaptername}}','{{detail.author}}','{{detail.img_url}}');
+</script>
+</body>
+</html>

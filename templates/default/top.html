@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小说排行榜 - 全站热门榜单</title>
+    <link rel="stylesheet" href="/static/{{theme}}/css/base.css">
+    <link rel="stylesheet" href="/static/{{theme}}/css/sort.css">
+    <link rel="stylesheet" href="/static/{{theme}}/css/rank.css">
+</head>
+<body>
+{% include 'default/components/header.html' %}
+<main class="container">
+    <div class="breadcrumb">
+        <a href="/">首页</a>
+        <span>></span>
+        <span>总排行榜</span>
+    </div>
+
+    <!-- 排名导航栏 -->
+    <div class="rank-nav">
+        {% for nav in rank_nav %}
+        <a href="{{ nav.url }}" class="rank-nav-item {% if nav.select %}active{% endif %}">
+            {{ nav.title }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- 各分类榜单区域 -->
+    {% if rows|length > 0 %}
+    {% for category_map in rows %}
+    {# 遍历分类Map（分类名 → 维度Map） #}
+    {% for category_name, dimension_map in category_map %}
+    <!-- 分类标题 -->
+    <h2 class="category-title">{{ category_name }} 榜单</h2>
+
+    <!-- 维度标签（访问量/月榜/周榜） -->
+    <div class="dimension-tabs">
+        <div class="dimension-tab active" data-dimension="allvisit-{{ category_name|slugify }}">总访问量榜</div>
+        <div class="dimension-tab" data-dimension="monthvisit-{{ category_name|slugify }}">月访问量榜</div>
+        <div class="dimension-tab" data-dimension="weekvisit-{{ category_name|slugify }}">周访问量榜</div>
+    </div>
+
+    <!-- 总访问量榜单（默认显示） -->
+    <div class="novel-list" id="allvisit-{{ category_name|slugify }}">
+        {% if dimension_map.allvisit|length > 0 %}
+        {% for novel in dimension_map.allvisit %}
+        <div class="novel-card">
+            <a href="{{ novel.info_url }}" >
+                <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}" class="novel-cover">
+            </a>
+            <div class="novel-info">
+                <a href="{{ novel.info_url }}" class="novel-title">
+                    {{ novel.articlename }}
+                </a>
+                <div class="novel-meta">
+                    <span>作者：{{ novel.author|default(value='未知') }}</span>
+                    <br>
+                    <span>总访问：{{ novel.allvisit|default(value=0) }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-tip">暂无 {{ category_name }} 总访问量榜单数据</div>
+        {% endif %}
+    </div>
+
+    <!-- 月访问量榜单（默认隐藏） -->
+    <div class="novel-list" id="monthvisit-{{ category_name|slugify }}" style="display: none;">
+        {% if dimension_map.monthvisit|length > 0 %}
+        {% for novel in dimension_map.monthvisit %}
+        <div class="novel-card">
+            <a href="{{ novel.info_url }}">
+                <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}" class="novel-cover">
+            </a>
+            <div class="novel-info">
+                <a href="{{ novel.info_url }}" class="novel-title">
+                    {{ novel.articlename }}
+                </a>
+                <div class="novel-meta">
+                    <span>作者：{{ novel.author|default(value='未知') }}</span>
+                    <br>
+                    <span>月访问：{{ novel.monthvisit|default(value=0) }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-tip">暂无 {{ category_name }} 月访问量榜单数据</div>
+        {% endif %}
+    </div>
+
+    <!-- 周访问量榜单（默认隐藏） -->
+    <div class="novel-list" id="weekvisit-{{ category_name|slugify }}" style="display: none;">
+        {% if dimension_map.weekvisit|length > 0 %}
+        {% for novel in dimension_map.weekvisit %}
+        <div class="novel-card">
+            <a href="{{ novel.info_url }}">
+                <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}" class="novel-cover">
+            </a>
+            <div class="novel-info">
+                <a href="{{ novel.info_url }}" class="novel-title">
+                    {{ novel.articlename }}
+                </a>
+                <div class="novel-meta">
+                    <span>作者：{{ novel.author|default(value='未知') }}</span>
+                    <br>
+                    <span>周访问：{{ novel.weekvisit|default(value=0) }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="empty-tip">暂无 {{ category_name }} 周访问量榜单数据</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% endfor %}
+    {% else %}
+    <!-- 无任何榜单数据提示 -->
+    <div class="empty-tip">暂无任何排行榜数据</div>
+    {% endif %}
+</main>
+{% include 'default/components/footer.html' %}
+<script src="/static/{{theme}}/js/base.js"></script>
+<script>
+    document.querySelectorAll('.dimension-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const parentTabs = this.parentElement;
+            parentTabs.querySelectorAll('.dimension-tab').forEach(t => {
+                if (t.classList.contains('active')) {
+                    const dimension = t.dataset.dimension;
+                    document.getElementById(`${dimension}`).style.display = 'none';
+                    t.classList.remove('active');
+                }
+            });
+            this.classList.add('active');
+            const dimension = this.dataset.dimension;
+            document.getElementById(`${dimension}`).style.display = 'flex';
+        });
+    });
+</script>
+</body>
+</html>

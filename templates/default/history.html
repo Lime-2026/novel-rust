@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>浏览历史 - {{SITE_NAME}}</title>
+    <link rel="stylesheet" href="/static/{{theme}}/css/base.css">
+    <style>
+        .bookshelf-header {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .bookshelf-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .bookshelf-empty-tip {
+            font-size: 16px;
+            color: #999;
+            text-align: center;
+            padding: 60px 0;
+            display: none;
+        }
+        .bookshelf-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+        .book-item {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+        }
+        .book-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+        .book-cover {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .book-info {
+            padding: 12px;
+        }
+        .book-title {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .book-author {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .book-progress {
+            font-size: 12px;
+            color: #999;
+        }
+        .book-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            border-top: 1px solid #f5f5f5;
+        }
+        .book-btn {
+            font-size: 12px;
+            color: #0088ff;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .book-btn:hover {
+            color: #0066cc;
+        }
+        .book-btn.remove {
+            color: #ff4d4f;
+        }
+        .book-btn.remove:hover {
+            color: #ff1f1f;
+        }
+        @media (max-width: 768px) {
+            .bookshelf-list {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 15px;
+            }
+            .book-cover {
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+{% include "default/components/header.html" %}
+<main class="container" style="min-height: 80vh;">
+    <div class="bookshelf-header">
+        <h1 class="bookshelf-title">阅读记录</h1>
+    </div>
+    <div class="bookshelf-empty-tip" id="emptyTip">
+        暂无阅读记录，去找书阅读吧～
+    </div>
+
+    <div class="bookshelf-list" id="bookshelfList">
+
+    </div>
+</main>
+{% include "default/components/footer.html" %}
+<script src="/static/{{theme}}/js/base.js"></script>
+<script src="/static/common/js/history.js"></script>
+<script>
+    const books = lastread.getBook().reverse();
+    if (books.length === 0) {
+        document.getElementById('emptyTip').style.display = 'block';
+        document.getElementById('bookshelfList').style.display = 'none';
+    } else {
+        let html = '';
+        const box = document.getElementById('bookshelfList');
+        for(let i=0 ; i<books.length; i++){
+            html += `
+            <div class="book-item">
+                <img class="book-cover" src="${books[i][5]}" alt="">
+                <div class="book-info">
+                    <div class="book-title">${books[i][2]}</div>
+                    <div class="book-progress">已阅至：${books[i][3]}</div>
+                </div>
+                <div class="book-actions">
+                    <button class="book-btn read" onclick="window.location.href='${books[i][1]}'">继续阅读</button>
+                    <button class="book-btn remove" onclick="removebook('${books[i][0]}')">移出书架</button>
+                </div>
+            </div>
+            `;
+        }
+        box.innerHTML = html;
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ author }} - 小说作者页</title>
+  <link rel="stylesheet" href="/static/{{theme}}/css/base.css">
+  <style>
+    /* 作者信息区域 */
+    .author-header {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .author-name {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+    .author-desc {
+      color: #666;
+      font-size: 14px;
+    }
+    /* 小说列表区域：核心布局（一行6个，兼容所有浏览器） */
+    .novel-list {
+      width: 100%;
+      padding: 10px 0;
+      overflow: hidden; /* 清浮动 */
+    }
+    /* 空列表提示 */
+    .empty-tip {
+      background-color: white;
+      padding: 40px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      text-align: center;
+      color: #999;
+      font-size: 16px;
+    }
+    /* 小说卡片样式：复用之前的最优方案 */
+    .novel-card {
+      float: left;
+      width: calc((100% - 5*16px) / 6); /* 6列 + 16px间距 */
+      margin-right: 16px;
+      margin-bottom: 16px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    /* 每行最后一个卡片去掉右侧间距（核心：nth-child(6n)） */
+    .novel-card:nth-child(6n) {
+      margin-right: 0 !important;
+    }
+    /* 最后一行不足6个时强制靠左 */
+    .novel-card:nth-last-child(-n+6):first-child,
+    .novel-card:nth-last-child(-n+6):first-child ~ .novel-card {
+      margin-right: 16px;
+    }
+    /* 卡片hover效果 */
+    .novel-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    /* 小说封面 */
+    .novel-cover {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block; /* 去掉图片默认间隙 */
+    }
+    /* 小说信息区域 */
+    .novel-info {
+      padding: 12px;
+    }
+    /* 小说标题 */
+    .novel-title {
+      font-size: 14px;
+      color: #2c3e50;
+      text-decoration: none;
+      display: -webkit-box;
+      -webkit-line-clamp: 1; /* 标题单行省略 */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .novel-title:hover {
+      color: #0066cc;
+    }
+    /* 小说作者（冗余但保留，可根据需求删除） */
+    .novel-meta {
+      font-size: 12px;
+      color: #999;
+    }
+    /* 移动端响应式适配 */
+    @media (max-width: 1200px) {
+      .novel-card {width: calc((100% - 3*16px) / 4);}
+      .novel-card:nth-child(4n) {margin-right: 0;}
+    }
+    @media (max-width: 768px) {
+      .novel-card {width: calc((100% - 2*16px) / 3);}
+      .novel-card:nth-child(3n) {margin-right: 0;}
+      .novel-cover {height: 200px;}
+    }
+    @media (max-width: 480px) {
+      .novel-card {width: calc((100% - 1*16px) / 2);}
+      .novel-card:nth-child(2n) {margin-right: 0;}
+      .author-name {font-size: 20px;}
+    }
+  </style>
+</head>
+<body>
+{% include 'default/components/header.html' %}
+<main class="container">
+  <div class="breadcrumb">
+    <a href="/">首页</a>
+    <span>></span>
+    <a href="{{ Uri }}">{{ author }}小说作品大全</a>
+  </div>
+  <div class="author-header">
+    <h1 class="author-name">{{ author }}</h1>
+    <p class="author-desc">共收录 {{ rows|length }} 部小说</p>
+  </div>
+  {% if rows|length > 0 %}
+  <div class="novel-list">
+    {% for novel in rows %}
+    <div class="novel-card">
+      <a href="{{ novel.info_url }}">
+        <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}" class="novel-cover">
+      </a>
+      <div class="novel-info">
+        <a href="{{ novel.info_url }}" class="novel-title">
+          {{ novel.articlename }}
+        </a>
+        <div class="novel-meta">
+          <span>作者：{{ novel.author|default(value='未知') }}</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-tip">
+    暂无 {{ author }} 的相关小说收录
+  </div>
+  {% endif %}
+</main>
+{% include 'default/components/footer.html' %}
+<script src="/static/{{theme}}/js/base.js"></script>
+</body>
+</html>

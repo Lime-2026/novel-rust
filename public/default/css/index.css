@@ -1,0 +1,381 @@
+main {
+    padding: 24px 0;
+}
+
+.section {
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: rgba(79, 70, 229, 0.2);
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #4f46e5;
+}
+
+.icon-star::before {
+    content: '★';
+    font-size: 18px;
+}
+
+.icon-fire::before {
+    content: '🔥';
+    font-size: 18px;
+}
+
+.icon-category::before {
+    content: '📁';
+    font-size: 18px;
+}
+
+.icon-update::before {
+    content: '🔄';
+    font-size: 18px;
+}
+
+.icon-publish::before {
+    content: '📅';
+    font-size: 18px;
+}
+
+/* 编辑推荐/热门排行 - Flex 布局（替代 Grid） */
+.novel-flex {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -4px; /* 抵消子项的 margin，保证容器无横向溢出 */
+}
+
+.novel-card {
+    flex: 0 0 calc(50% - 8px); /* 移动端2列，减去间距 */
+    margin: 4px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.novel-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.novel-cover {
+    width: 100%;
+    aspect-ratio: 3/4;
+    position: relative;
+}
+
+.novel-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.novel-cover .placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 24px;
+}
+
+.novel-tag {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #ffffff;
+}
+
+.tag-finish {
+    background-color: #22c55e;
+}
+
+.tag-serial {
+    background-color: #ef4444;
+}
+
+.novel-info {
+    padding: 8px;
+}
+
+.novel-title {
+    font-weight: 600;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.novel-meta {
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 1px;
+}
+
+.novel-meta-light {
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+/* 分类区域 - Flex 布局（替代 Grid） */
+.category-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.category-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    width: 100%;
+}
+
+.category-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.category-title .line {
+    width: 4px;
+    height: 18px;
+    background-color: #4f46e5;
+    border-radius: 2px;
+}
+
+/* 分类 Flex 容器 */
+.category-flex {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -4px;
+    gap: 10px;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: calc(100% / 7 - 10px);
+}
+
+.category-item:hover {
+    transform: translateY(-2px);
+}
+
+.category-cover {
+    width: 100%;
+    max-height: 200px;
+    background-color: #f3f4f6;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.category-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.category-cover .placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 20px;
+}
+
+.category-name {
+    font-size: 14px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.more-link {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+    font-size: 11px;
+    color: #4f46e5;
+}
+
+.more-link:hover {
+    text-decoration: underline;
+}
+
+/* 最新更新/发布双列布局 - Flex 保留（原本就是 Flex） */
+.double-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.column-card {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    width: 100%;
+}
+
+.novel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.novel-list-item {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.novel-list-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.list-cover {
+    width: 45px;
+    height: 60px;
+    background-color: #f3f4f6;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.list-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.list-cover .placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    font-size: 16px;
+}
+
+.list-info {
+    flex: 1;
+}
+
+.list-title {
+    font-weight: 500;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.list-title:hover {
+    color: #4f46e5;
+}
+
+.list-meta {
+    font-size: 11px;
+    color: #6b7280;
+    margin-bottom: 2px;
+}
+
+.list-meta-flex {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+/* 空数据样式 */
+.empty-state {
+    flex: 0 0 100%;
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    color: #6b7280;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    margin: 4px;
+}
+
+.list-empty-state {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    color: #6b7280;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    width: 100%;
+}
+
+/* 响应式媒体查询 - 移动端（767px以下） */
+@media (max-width: 767px) {
+    .desktop-nav {
+        display: none;
+    }
+
+    .menu-btn {
+        display: block;
+    }
+
+    /* 移动端强制2列 */
+    .novel-card {
+        flex: 0 0 calc(33% - 8px);
+    }
+
+    .category-item {
+        flex: 0 0 calc(50% - 8px);
+    }
+}
+
+/* 桌面端（1024px+） */
+@media (min-width: 1024px) {
+    /* 桌面4列（编辑推荐/热门）+ 5列（分类） */
+    .novel-card {
+        flex: 0 0 calc(25% - 8px);
+    }
+    .double-column {
+        flex-direction: row;
+    }
+}
+
+@media (min-width: 1200px) {
+    .novel-card {
+        flex: 0 0 calc(14% - 6px);
+    }
+}

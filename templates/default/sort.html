@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ sort.caption }} - {{ SITE_NAME }}</title>
+    <meta name="description" content="{{ sort.caption }}小说大全，最新更新{{ sort.caption }}小说尽在{{ SITE_NAME }}">
+    <link rel="stylesheet" href="/static/{{theme}}/css/base.css">
+    <link rel="stylesheet" href="/static/{{theme}}/css/sort.css">
+</head>
+<body>
+{% include "default/components/header.html" %}
+
+<main class="container">
+    <div class="breadcrumb">
+        <a href="/">首页</a>
+        <span>></span>
+        <a href="{{ Uri }}">{{ sort.caption }}</a>
+        <span>></span>
+        <span>第 {{ page }} 页 / 共 {{ max_page }} 页</span>
+    </div>
+    {% if rows|length > 0 %}
+    <div class="novel-list">
+        {% for novel in rows %}
+        <div class="novel-card">
+            <a href="{{ novel.info_url }}">
+                <img src="{{ novel.img_url }}" alt="{{ novel.articlename }}" class="novel-cover">
+            </a>
+            <div class="novel-info">
+                <a href="{{ novel.info_url }}" class="novel-title">{{ novel.articlename }}</a>
+                <div class="novel-meta">
+                    <span>作者：{{ novel.author|default(value='未知') }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-list">
+        暂无{{ sort.caption }}小说，敬请期待！
+    </div>
+    {% endif %}
+    <div class="pagination">
+        {% if prev_url != '' %}
+        <a href="{{ prev_url }}" class="pagination-btn">上一页</a>
+        {% else %}
+        <span class="pagination-btn disabled">上一页</span>
+        {% endif %}
+        {% for p in jump_pages %}
+        {% if p.select %}
+        <span class="pagination-current">{{ page }}</span>
+        {% else %}
+        <a href="{{ p.url }}" class="pagination-btn">{{ p.page }}</a>
+        {% endif %}
+        {% endfor %}
+        {% if next_url != '' %}
+        <a href="{{ next_url }}" class="pagination-btn">下一页</a>
+        {% else %}
+        <span class="pagination-btn disabled">下一页</span>
+        {% endif %}
+    </div>
+</main>
+{% include "default/components/footer.html" %}
+<script src="/static/{{theme}}/js/base.js"></script>
+<script src="/static/{{theme}}/js/sort.js"></script>
+</body>
+</html>
