@@ -24,6 +24,8 @@ conf.json 配置说明
   "vote_perday": 5,		// 推荐票(暂时无用)
   "index_list_num": 100,	 // 目录页每页多少章节 
   "prefix": "jieqi_",	// 数据库表前缀 杰奇(jieqi_)  船说优化|船说分表(shipsay_) 多选(dx_)
+  "is_lang": true,	// 是否启用长尾词
+
   "rewrite": {
     "info_url": "/book/{id}.html",		// 信息页伪静态可用：{id} {sid}也就是传统的id/1000
     "chapter_url": "/book/{id}/{cid}/{page}.html",	// 章节页伪静态 {id} {sid}也就是传统的id/1000  {cid} 章节id {page} 分页表示 {s_cid} 这个是兼容船说的章节分页 如果使用{cid}与{page}不允许使用  未开启分页的情况下禁用{page}与{s_cid}
@@ -34,7 +36,9 @@ conf.json 配置说明
     "author_url": "/author/{name}",	// 作者伪静态 {name}
     "complete_url": "",	// 完本伪静态 暂时未兼容
     "rank_url": "/rank/{code}.html",	// 排行内页 {code}
-    "search_url": "/search.html"	// 搜索伪静态
+    "search_url": "/search.html",	// 搜索伪静态
+    "lang_url": "/lang/{id}.html",	// 长尾词伪静态 可用标签与信息页一致
+    "lang_index_url": "/lang/{id}/{page}.html"	// 长尾词目录页伪静态 可用标签与目录页一致
   },
   "sort_arr": [
     {

@@ -66,7 +66,7 @@ pub(crate) async fn get_chapter_rows(
     cache: u32,
     source_id: u64,
 ) -> Vec<NovelChapter> {
-    crate::utils::redis::conn::get_chapter_rows(
+    utils::redis::conn::get_chapter_rows(
         format!("SELECT {filed} FROM {table} WHERE articleid = ? ORDER BY chapterid ASC;",filed=NOVEL_CHAPTER_FILED,table=CONFIG.get_chapter_table(source_id)),
         url,
         cache as u64,

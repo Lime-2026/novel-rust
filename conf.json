@@ -15,6 +15,7 @@
   "vote_perday": 5,
   "index_list_num": 100,
   "prefix": "jieqi_",
+  "is_lang": true,
   "rewrite": {
     "info_url": "/book/{id}.html",
     "chapter_url": "/book/{id}/{cid}/{page}.html",
@@ -25,7 +26,9 @@
     "author_url": "/author/{name}",
     "complete_url": "",
     "rank_url": "/rank/{code}.html",
-    "search_url": "/search.html"
+    "search_url": "/search.html",
+    "lang_url": "/lang/{id}.html",
+    "lang_index_url": "/lang/{id}/{page}.html"
   },
   "sort_arr": [
     {

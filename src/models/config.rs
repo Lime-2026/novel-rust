@@ -30,6 +30,7 @@ pub struct Config {
     pub(crate) search: Search,
     pub(crate) cache: Cache,
     pub(crate) read_page_split_mode: u8,
+    pub(crate) is_lang: bool,
 }
 
 impl Config {
@@ -87,6 +88,21 @@ impl Config {
             .info_url
             .replace("{id}", &id.to_string())
             .replace("{sid}", &self.short_id(id).to_string())
+    }
+
+    pub fn lang_info_url(&self, id: u64) -> String {
+        self.rewrite
+            .lang_url
+            .replace("{id}", &id.to_string())
+            .replace("{sid}", &self.short_id(id).to_string())
+    }
+
+    pub fn lang_index_url(&self, id: u64,page: u64) -> String {
+        self.rewrite
+            .lang_index_url
+            .replace("{id}", &id.to_string())
+            .replace("{sid}", &self.short_id(id).to_string())
+            .replace("{page}", &page.to_string())
     }
 
     pub fn read_url(&self, id: u64,cid: u64,page: u64) -> String {
@@ -148,6 +164,8 @@ pub struct Rewrite {
     pub(crate) index_list_url: String,
     pub(crate) author_url: String,
     pub(crate) search_url: String,
+    pub(crate) lang_url: String,
+    pub(crate) lang_index_url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

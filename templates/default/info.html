@@ -59,8 +59,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 2. 最近章节 -->
     <div class="section">
         <h2 class="section-title">📑 最近更新</h2>
         <div class="chapters-card">
@@ -77,8 +75,6 @@
             {% endif %}
         </div>
     </div>
-
-    <!-- 3. 全部章节 -->
     <div class="section">
         <h2 class="section-title">📚 全部章节</h2>
         <div class="chapters-card">
@@ -95,6 +91,18 @@
             {% endif %}
         </div>
     </div>
+    {% if conf(key="is_lang") %}
+    <div class="section">
+        <h2 class="section-title">📚 相关推荐</h2>
+        <div class="chapters-card" style="display: flex;flex-wrap: wrap;gap:8px">
+           {% for item in lang_arr %}
+                <a href="{{ item.info_url }}" class="chapter-item">
+                    {{ item.langname }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </main>
 {% include "default/components/footer.html" %}
 <script src="/static/{{theme}}/js/base.js"></script>

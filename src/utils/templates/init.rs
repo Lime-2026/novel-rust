@@ -3,7 +3,7 @@ use std::sync::Arc;
 use tera::{Result as TeraResult, Tera};
 use crate::utils::db::conn::{DB_CONN};
 use crate::utils::templates::db::DbQueryTag;
-use crate::utils::templates::str::{RewriterFunction, SortArrayFunction, SubstrFunction, TimeFunction};
+use crate::utils::templates::str::{GETConfigFunction, RewriterFunction, SortArrayFunction, SubstrFunction, TimeFunction};
 
 /// --------------------------
 /// 初始化Tera模板引擎（全局复用）
@@ -18,6 +18,7 @@ pub fn init_tera() -> TeraResult<Arc<Tera>> {
     tera.register_function("date",TimeFunction);
     tera.register_function("sort_arr",SortArrayFunction);
     tera.register_function("rewrite",RewriterFunction);
+    tera.register_function("conf",GETConfigFunction);
     Ok(Arc::new(tera))
 }
 

@@ -1,6 +1,6 @@
 [package]
 name = "lime_novel"
-version = "0.10.1"
+version = "0.10.2"
 edition = "2024"
 
 [dependencies]
@@ -40,5 +40,4 @@ uuid = { version = "0.7", features = ["serde", "v4"] }
 opt-level = 3          # 最高级别优化（默认）
 lto = true             # 链接时优化（大幅减小体积，编译时间变长）
 codegen-units = 1      # 单代码生成单元（提升优化效果）
-panic = "abort"        # 恐慌时直接终止（去掉 panic 回溯，减小体积）
 strip = true           # 剥离调试信息（等价于手动 strip 命令）

@@ -10,7 +10,7 @@ use tokio::runtime::Runtime;
 use sea_orm::sqlx::{Column, Row, TypeInfo};
 use tera::{Error as TeraError, Function, Result as TeraResult, Value as TeraValue};
 
-pub(crate) static TOKIO_RT: Lazy<Runtime> =
+pub static TOKIO_RT: Lazy<Runtime> =
     Lazy::new(|| Runtime::new().expect("创建 Tokio 全局运行时失败"));
 
 #[derive(Clone)]

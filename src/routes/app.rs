@@ -8,8 +8,8 @@ use crate::handlers::author::get_author;
 use crate::handlers::chapter::get_chapter;
 use crate::handlers::history::get_history;
 use crate::handlers::index::{get_index};
-use crate::handlers::index_list::get_index_list;
-use crate::handlers::info::{get_info};
+use crate::handlers::index_list::{get_index_list, get_lang_index};
+use crate::handlers::info::{get_info, get_lang};
 use crate::handlers::rank::{get_rank, get_top};
 use crate::handlers::search::{get_search, post_search};
 use crate::handlers::sort::get_sort;
@@ -32,7 +32,12 @@ pub async fn router() -> Router {
     let tera = utils::templates::init::init_tera().unwrap();
     let template_names: Vec<&str> = tera.get_template_names().collect();
     eprintln!("已加载模板：{:?}", template_names);
-    Router::new().route("/", get(get_index))
+    let mut router = Router::new();
+    if CONFIG.is_lang {
+        router = router.route(trim_suffix(CONFIG.rewrite.lang_url.as_str()), get(get_lang))
+            .route(trim_suffix(CONFIG.rewrite.lang_index_url.as_str()), get(get_lang_index));
+    }
+    router.route("/", get(get_index))
         .route(trim_suffix(CONFIG.rewrite.info_url.as_str()), get(get_info))
         .route(trim_suffix(CONFIG.rewrite.index_list_url.as_str()), get(get_index_list))
         .route(trim_suffix(CONFIG.rewrite.chapter_url.as_str()), get(get_chapter))

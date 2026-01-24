@@ -34,9 +34,8 @@ impl NovelChapter {
     }
 }
 
-#[derive(Debug, FromQueryResult,Serialize,Deserialize)]
+#[derive(Debug, FromQueryResult,Serialize,Deserialize,Clone)]
 #[allow(dead_code)]
-#[derive(Clone)]
 pub(crate) struct Novel {
     pub articleid: u64,
     pub articlename: String,
@@ -85,3 +84,16 @@ pub(crate) struct Novel {
     pub source_id: u64,
 }
 
+
+#[derive(Debug, FromQueryResult,Serialize,Deserialize,Clone)]
+#[allow(dead_code)]
+pub(crate) struct LangTail {
+    pub langid: u64,
+    pub langname: String,
+    pub sourceid: u64,
+    pub uptime: u64,
+    #[sea_orm(skip)]
+    pub info_url: String,
+    #[sea_orm(skip)]
+    pub index_url: String,
+}

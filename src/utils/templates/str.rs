@@ -4,6 +4,23 @@ use tera::{Function, Result as TeraResult, Value};
 use crate::utils::conf::CONFIG;
 
 #[derive(Clone)]
+pub struct GETConfigFunction;
+impl Function for GETConfigFunction {
+    fn call(&self, args: &HashMap<String, Value>) -> TeraResult<Value> {
+        let key = args
+            .get("key")
+            .ok_or_else(|| tera::Error::msg("获取配置项的键是必须的"))?
+            .as_str()
+            .ok_or_else(|| tera::Error::msg("key 参数必须是字符串类型"))?;
+        // 出于性能考虑 此处不做任何序列化取值 默认返回空字符串
+        match key {
+            "is_lang" => Ok(Value::Bool(CONFIG.is_lang)),
+            _ => Ok(Value::String("".to_string())),
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct RewriterFunction;
 impl Function for RewriterFunction {
     fn call(&self, args: &HashMap<String, Value>) -> TeraResult<Value> {
