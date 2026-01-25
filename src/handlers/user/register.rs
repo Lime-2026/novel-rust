@@ -9,7 +9,7 @@ use regex::Regex;
 use serde::Deserialize;
 use crate::{routes, services};
 use crate::services::json::ApiResponse;
-use crate::utils::conf::CONFIG;
+use crate::utils::conf::{get_config};
 use crate::utils::cookie::set_cookie_value;
 use crate::utils::file::file_exists;
 use crate::utils::templates::render;
@@ -33,13 +33,13 @@ pub(crate) async fn get_register(
     headers: HeaderMap,
     OriginalUri(uri): OriginalUri,
 ) -> Result<impl IntoResponse, TeraRenderError> {
-    if !file_exists(format!("templates/{}/user/register.html", CONFIG.theme_dir)) {
+    if !file_exists(format!("templates/{}/user/register.html", get_config().theme_dir)) {
         println!("No such file or directory");
         return Err(TeraRenderError::InvalidId);
     }
     let mut ctx = tera::Context::new();
     services::novel::process_tera_tag(&headers, &uri, &mut ctx);
-    let template_path = format!("{}/user/register.html", CONFIG.theme_dir);
+    let template_path = format!("{}/user/register.html", get_config().theme_dir);
     let html = render::render_template(app_state.tera.clone(), &template_path, ctx).await?;
     Ok((
         [(axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8")],
@@ -51,7 +51,7 @@ pub(crate) async fn post_register(
     mut jar: CookieJar,
     Form(params) : Form<RegisterForm>
 ) -> impl IntoResponse {
-    if !file_exists(format!("templates/{}/user/register.html", CONFIG.theme_dir)) {
+    if !file_exists(format!("templates/{}/user/register.html", get_config().theme_dir)) {
         return Err(TeraRenderError::InvalidId);
     }
     let mut error_msg = Vec::new();

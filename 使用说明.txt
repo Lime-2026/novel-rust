@@ -3,7 +3,8 @@
 DATABASE_URL=mysql://[用户名]:[密码]@[数据库IP]:[数据库端口]/[数据库名]?charset=utf8mb4		
 REDIS_URL=redis://[用户名:密码@]主机:端口/[数据库编号]
 PORT=[运行端口]
-
+ADMIN_URL=/admin        // 后台管理地址 可自定义 注意必须改
+ADMIN_TOKEN=admin_token // 后台管理token 可自定义 注意必须改(否则无法登录) 具体使用 /admin?token=admin_token
 
 conf.json 配置说明
 
@@ -78,7 +79,7 @@ conf.json 配置说明
   "confusion_value": 12,	// 混淆值
   "confusion_algorithm": "^",	// 混淆算法 + * ^
   "filter": "敏感词1|敏感词2",	// 暂时未兼容
-  "link": "https://link.example.com",	// 友情链接 暂时未兼容
+  "link": "<a href=\"www.baidu.com\" target=\"_blank\">百度</a>",	// 友情链接 html代码 调用 {{link()}}
   "is_report": true,	// 章节报错 未兼容
   "report_time": 86400,	// 报错间隔 
   "search": {
@@ -95,10 +96,21 @@ conf.json 配置说明
     "sort": 1200,
     "rank": 1800,
     "other": 3600
-  }
+  },
+  "ads": [  // 广告代码 pos必须独一无二 调用使用标签 {{ads(key='header')}} 其中header表示广告key 它会输出pos为header的广告代码
+      {
+        "pos": "header",
+        "code": "header_ad"
+      },
+      {
+        "pos": "header_2",
+        "code": "header_ad"
+      }
+    ],
+    "stat_code": "<script>我是广告代码</script>"  // 统计代码 调用 {{stat_code()}}
 }
 
 
 注意事项：
 	1. 伪静态不要冲突 比如小说信息页/book/{sid}/{id} 然后后边目录页又来了个 /book/{id}/{page} 这就是典型的冲突 程序会直接崩溃 你要把所有{xxx}都要看成相同的
-	2. 
+	2. 长尾词表前缀要与数据库表前缀一致 不可用shipasy_ jieqi_混用 或dx_

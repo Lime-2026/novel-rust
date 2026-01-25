@@ -4,7 +4,7 @@ use time::OffsetDateTime;
 use uuid::Uuid;
 use crate::models::user::{BookShelf, BookShelfOnNovel, User};
 use crate::services::novel::query_novel_process;
-use crate::utils::conf::CONFIG;
+use crate::utils::conf::get_config;
 use crate::utils::db::db::{exec_sql, get_one_as, query_all_as, query_count};
 
 #[derive(Error, Debug)]
@@ -34,14 +34,14 @@ pub(crate) async fn create_user(
     email: &str,
 ) -> Result<User, CreateUserError> {
     let count = query_count(
-        format!("SELECT COUNT(*) AS cnt FROM {table}system_users WHERE uname = ? ", table=CONFIG.prefix).as_str()
+        format!("SELECT COUNT(*) AS cnt FROM {table}system_users WHERE uname = ? ", table=get_config().prefix).as_str()
         ,Some(Values(vec![Value::String(Some(username.parse().unwrap()))]))
     ).await?;
     if count > 0 {
         return Err(CreateUserError::UsernameAlreadyExist);
     }
     let count = query_count(
-        format!("SELECT COUNT(*) AS cnt FROM {table}system_users WHERE email = ? ", table=CONFIG.prefix).as_str()
+        format!("SELECT COUNT(*) AS cnt FROM {table}system_users WHERE email = ? ", table=get_config().prefix).as_str()
         ,Some(Values(vec![Value::String(Some(email.parse().unwrap()))]))
     ).await?;
     if count > 0 {
@@ -49,11 +49,11 @@ pub(crate) async fn create_user(
     }
     let regdate = timestamp_10();
     let pass = format!("{:x}", md5::compute(password.as_bytes()));
-    let (sql, values) = if CONFIG.sys_ver < 2.0 {
+    let (sql, values) = if get_config().sys_ver < 2.0 {
         (
             format!(
                 "INSERT INTO {table}system_users (uname, name, pass, email, regdate) VALUES (?, ?, ?, ?, ?)",
-                table = CONFIG.prefix
+                table = get_config().prefix
             ),
             Values(vec![
                 Value::String(Some(username.to_owned())),
@@ -72,7 +72,7 @@ pub(crate) async fn create_user(
         (
             format!(
                 "INSERT INTO {table}system_users (uname, name, pass, email, regdate, salt) VALUES (?, ?, ?, ?, ?, ?)",
-                table = CONFIG.prefix
+                table = get_config().prefix
             ),
             Values(vec![
                 Value::String(Some(username.to_owned())),
@@ -98,15 +98,15 @@ pub async fn is_user_login(
     user_id: &str,
     password: &str,
 ) -> Result<bool, CreateUserError> {
-    let sql = if CONFIG.sys_ver < 2.0 {
+    let sql = if get_config().sys_ver == 1.7 {
         format!(
             "SELECT *,'' AS salt FROM {table}system_users WHERE uid = ? LIMIT 1",
-            table = CONFIG.prefix
+            table = get_config().prefix
         )
     } else {
         format!(
             "SELECT * FROM {table}system_users WHERE uid = ? LIMIT 1",
-            table = CONFIG.prefix
+            table = get_config().prefix
         )
     };
     let user = get_one_as::<User>(
@@ -125,15 +125,15 @@ pub async fn get_user(
     username: &str,
     password: &str,
 ) -> Result<User, CreateUserError> {
-    let sql = if CONFIG.sys_ver < 2.0 {
+    let sql = if get_config().sys_ver == 1.7 {
         format!(
             "SELECT *,'' AS salt FROM {table}system_users WHERE uname = ? LIMIT 1",
-            table = CONFIG.prefix
+            table = get_config().prefix
         )
     } else {
         format!(
             "SELECT * FROM {table}system_users WHERE uname = ? LIMIT 1",
-            table = CONFIG.prefix
+            table = get_config().prefix
         )
     };
     let user = get_one_as::<User>(
@@ -143,7 +143,7 @@ pub async fn get_user(
         .await?
         .ok_or(CreateUserError::UserNotExist)?;
     let pass0 = format!("{:x}", md5::compute(password.as_bytes()));
-    let expected = if CONFIG.sys_ver < 2.0 {
+    let expected = if get_config().sys_ver < 2.0 {
         pass0
     } else {
         let salt = user.salt.clone();
@@ -168,7 +168,7 @@ pub async fn get_bookcase_list(
 ) -> Result<Vec<BookShelfOnNovel>, DbErr> {
     let sql = format!(
         "SELECT * FROM {table}article_bookcase WHERE userid = ?",
-        table = CONFIG.prefix
+        table = get_config().prefix
     );
     let mut bs = query_all_as::<BookShelf>(
         &sql,
@@ -186,7 +186,7 @@ pub async fn get_bookcase_list(
         .take(bs.len())
         .collect::<Vec<_>>()
         .join(",");
-    let novel_sql = format!("SELECT * FROM {table}article_article WHERE articleid IN ({}) ORDER BY lastupdate DESC",placeholders,table = CONFIG.prefix);
+    let novel_sql = format!("SELECT * FROM {table}article_article WHERE articleid IN ({}) ORDER BY lastupdate DESC",placeholders,table = get_config().prefix);
     let novel_list = query_novel_process(
         &novel_sql,
         Some(Values(vals)),
@@ -210,9 +210,9 @@ pub(crate) fn bookshelf_mapping(bs: &mut [BookShelf]) {
         b.case_url = if b.chapterid == 0 {
             "".to_string()
         } else {
-            let articleid = CONFIG.new_id(b.articleid);
-            let chapterid = CONFIG.new_id(b.chapterid);
-            CONFIG.read_url(articleid, chapterid, 1)
+            let articleid = get_config().new_id(b.articleid);
+            let chapterid = get_config().new_id(b.chapterid);
+            get_config().read_url(articleid, chapterid, 1)
         };
     }
 }

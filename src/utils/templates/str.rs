@@ -1,8 +1,37 @@
 use std::collections::HashMap;
 use chrono::{Local, TimeZone};
 use tera::{Function, Result as TeraResult, Value};
-use crate::utils::conf::CONFIG;
+use crate::utils::conf::get_config;
 
+pub struct LinkFunction;
+impl Function for LinkFunction {
+    fn call(&self, _args: &HashMap<String, Value>) -> TeraResult<Value> {
+        Ok(Value::String(get_config().link.clone()))
+    }
+}
+
+pub struct StatCodeFunction;
+impl Function for StatCodeFunction {
+    fn call(&self, _args: &HashMap<String, Value>) -> TeraResult<Value> {
+        Ok(Value::String(get_config().stat_code.clone()))
+    }
+}
+pub struct AdsFunction;
+impl Function for AdsFunction {
+    fn call(&self, args: &HashMap<String, Value>) -> TeraResult<Value> {
+        let key = args
+            .get("key")
+            .ok_or_else(|| tera::Error::msg("获取配置项的键是必须的"))?
+            .as_str()
+            .ok_or_else(|| tera::Error::msg("key 参数必须是字符串类型"))?;
+        let value = get_config().ads
+            .iter()
+            .find(|v| v.pos == key)
+            .map(|v| v.code.clone())
+            .unwrap_or_else(|| "".to_string());
+        Ok(Value::String(value))
+    }
+}
 #[derive(Clone)]
 pub struct GETConfigFunction;
 impl Function for GETConfigFunction {
@@ -14,7 +43,7 @@ impl Function for GETConfigFunction {
             .ok_or_else(|| tera::Error::msg("key 参数必须是字符串类型"))?;
         // 出于性能考虑 此处不做任何序列化取值 默认返回空字符串
         match key {
-            "is_lang" => Ok(Value::Bool(CONFIG.is_lang)),
+            "is_lang" => Ok(Value::Bool(get_config().is_lang)),
             _ => Ok(Value::String("".to_string())),
         }
     }
@@ -30,16 +59,16 @@ impl Function for RewriterFunction {
             .as_str()
             .ok_or_else(|| tera::Error::msg("type 参数必须是字符串类型"))?;
         match type_str {
-            "search" => Ok(Value::String(CONFIG.rewrite.search_url.clone())),
+            "search" => Ok(Value::String(get_config().rewrite.search_url.clone())),
             "rank" => {
                 let code = args
                     .get("code")
                     .and_then(|v| v.as_str())
                     .unwrap_or("allvisit");
-                Ok(Value::String(CONFIG.rank_url(code)))
+                Ok(Value::String(get_config().rank_url(code)))
             },
-            "top" => Ok(Value::String(CONFIG.rewrite.top_url.clone())),
-            "history" => Ok(Value::String(CONFIG.rewrite.history_url.clone())),
+            "top" => Ok(Value::String(get_config().rewrite.top_url.clone())),
+            "history" => Ok(Value::String(get_config().rewrite.history_url.clone())),
             _ => Err(tera::Error::msg(format!("未知的 type 参数值: {}", type_str))),
         }
     }
@@ -49,7 +78,7 @@ impl Function for RewriterFunction {
 pub struct SortArrayFunction;
 impl Function for SortArrayFunction {
     fn call(&self, _args: &HashMap<String, Value>) -> TeraResult<Value> {
-        let arr = CONFIG
+        let arr = get_config()
             .sort_arr
             .iter()
             .map(|s| serde_json::to_value(s).map_err(|e| tera::Error::msg(e.to_string())))

@@ -10,7 +10,7 @@ use serde::Deserialize;
 use crate::{routes, services};
 use crate::services::json::ApiResponse;
 use crate::services::user::get_bookcase_list;
-use crate::utils::conf::CONFIG;
+use crate::utils::conf::{get_config};
 use crate::utils::db::db::{exec_sql, query_count};
 use crate::utils::file::file_exists;
 use crate::utils::templates::render;
@@ -37,7 +37,7 @@ pub(crate) async fn get_bookcase(
     let mut ctx = tera::Context::new();
     services::novel::process_tera_tag(&headers, &uri, &mut ctx);
     ctx.insert("bookcase_list", &bs);
-    let template_path = format!("{}/user/bookcase.html", CONFIG.theme_dir);
+    let template_path = format!("{}/user/bookcase.html", get_config().theme_dir);
     let html = render::render_template(app_state.tera.clone(), &template_path, ctx).await?;
     Ok((
         [(axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8")],
@@ -62,22 +62,22 @@ pub(crate) async fn add_bookcase(
     jar: CookieJar,
     Form(params): Form<AddBookcaseReq>,
 ) -> impl IntoResponse {
-    if !file_exists(format!("templates/{}/user/bookcase.html", CONFIG.theme_dir)) {
+    if !file_exists(format!("templates/{}/user/bookcase.html", get_config().theme_dir)) {
         return Err(TeraRenderError::InvalidId);
     }
     let user_id = jar.get("ss_userid").map(|c| c.value().to_string());
     if params.articleid == 0 || params.articlename.is_empty() || user_id.is_none(){
         return Ok(ApiResponse::fail("添加失败", Some(vec!["传参错误".to_string()])))
     }
-    let source_id = CONFIG.source_id(params.articleid);
+    let source_id = get_config().source_id(params.articleid);
     let source_cid = params.chapterid.unwrap_or(0);
-    let count_sql = format!("SELECT COUNT(*) AS cnt FROM {}article_bookcase WHERE articleid = ? and userid = ?", CONFIG.prefix);
+    let count_sql = format!("SELECT COUNT(*) AS cnt FROM {}article_bookcase WHERE articleid = ? and userid = ?", get_config().prefix);
     let num = query_count(
         count_sql.as_str(),
         Some(Values(vec![source_id.into(), user_id.clone().into()])),
     ).await.unwrap_or(0);
     let num_2 = if num > 0 {
-        let s = format!("UPDATE {}article_bookcase SET chapterid = ?, chaptername = ? WHERE articleid = ? and userid = ?", CONFIG.prefix).to_owned();
+        let s = format!("UPDATE {}article_bookcase SET chapterid = ?, chaptername = ? WHERE articleid = ? and userid = ?", get_config().prefix).to_owned();
         exec_sql(
             s.as_str(),
             Some(Values(vec![
@@ -88,14 +88,14 @@ pub(crate) async fn add_bookcase(
             ])),
         ).await.unwrap_or(0)
     } else {
-        let ss = format!("UPDATE {}article_article SET goodnum = goodnum + 1 WHERE articleid = ?", CONFIG.prefix).to_owned();
+        let ss = format!("UPDATE {}article_article SET goodnum = goodnum + 1 WHERE articleid = ?", get_config().prefix).to_owned();
         _ = exec_sql(
             ss.as_str(),
             Some(Values(vec![
                 source_id.into(),
             ])),
         ).await.unwrap_or(0);
-        let s = format!("INSERT INTO {}article_bookcase (articleid, articlename, chapterid, chaptername, userid,username) VALUES (?, ?, ?, ?, ?, ?)", CONFIG.prefix).to_owned();
+        let s = format!("INSERT INTO {}article_bookcase (articleid, articlename, chapterid, chaptername, userid,username) VALUES (?, ?, ?, ?, ?, ?)", get_config().prefix).to_owned();
         exec_sql(
             s.as_str(),
             Some(Values(vec![
@@ -118,14 +118,14 @@ pub(crate) async fn del_bookcase(
     jar: CookieJar,
     Form(params): Form<DelBookcaseReq>,
 ) -> impl IntoResponse {
-    if !file_exists(format!("templates/{}/user/bookcase.html", CONFIG.theme_dir)) {
+    if !file_exists(format!("templates/{}/user/bookcase.html", get_config().theme_dir)) {
         return Err(TeraRenderError::InvalidId);
     }
     let user_id = jar.get("ss_userid").map(|c| c.value().to_string());
     if params.caseid == 0 || user_id.is_none() {
         return Ok(ApiResponse::fail("删除失败", Some(vec!["传参错误".to_string()])))
     }
-    let sql = format!("DELETE FROM {}article_bookcase WHERE caseid = ? and userid = ?", CONFIG.prefix);
+    let sql = format!("DELETE FROM {}article_bookcase WHERE caseid = ? and userid = ?", get_config().prefix);
     match exec_sql(
         sql.as_str(),
         Some(Values(vec![params.caseid.into(),user_id.into()])),
@@ -145,7 +145,7 @@ pub(crate) async fn login_auth(
     req: Request<Body>,
     next: Next,
 ) -> Result<Response, TeraRenderError> {
-    if !file_exists(format!("templates/{}/user/bookcase.html", CONFIG.theme_dir)) {
+    if !file_exists(format!("templates/{}/user/bookcase.html", get_config().theme_dir)) {
         return Err(TeraRenderError::InvalidId);
     }
     let user_id = jar.get("ss_userid").map(|c| c.value().to_string());

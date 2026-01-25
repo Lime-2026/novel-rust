@@ -1,7 +1,6 @@
 use crate::models::novel::NovelChapter;
 use crate::routes::app::AppState;
 use crate::services::lang_tail::{gen_lang_tail, get_lang_tail_array};
-use crate::utils::conf::CONFIG;
 use crate::utils::file::file_exists;
 use crate::utils::templates::render;
 use crate::utils::templates::render::TeraRenderError;
@@ -12,6 +11,7 @@ use axum::http::header::HOST;
 use axum::response::IntoResponse;
 use serde::{Deserialize, Serialize};
 use crate::services::novel::{extract_id, get_novel_info};
+use crate::utils::conf::get_config;
 
 #[derive(Deserialize)]
 #[allow(dead_code)]
@@ -34,7 +34,7 @@ pub(crate) async fn get_index_list(
     headers: HeaderMap,
     OriginalUri(uri): OriginalUri,
 ) -> Result<impl IntoResponse, TeraRenderError> {
-    if !file_exists(format!("templates/{}/index_list.html", CONFIG.theme_dir)) {
+    if !file_exists(format!("templates/{}/index_list.html", get_config().theme_dir)) {
         println!("No such file or directory");
         return Err(TeraRenderError::InvalidId);
     }
@@ -45,17 +45,17 @@ pub(crate) async fn get_index_list(
     if page == 0 {
         return Err(TeraRenderError::InvalidId);
     }
-    let source_id = CONFIG.source_id(id);
+    let source_id = get_config().source_id(id);
     let url = headers
         .get(HOST)
         .and_then(|v| v.to_str().ok()) // 安全转换为字符串
         .unwrap_or("unknown.host");
-    let row = services::novel::get_novel_info(url, CONFIG.cache.info, source_id)
+    let row = services::novel::get_novel_info(url, get_config().cache.info, source_id)
         .await
         .into_iter()
         .next()
         .ok_or(TeraRenderError::InvalidId)?;
-    let chapter_rows = services::novel::get_chapter_rows(url, CONFIG.cache.info, source_id).await;
+    let chapter_rows = services::novel::get_chapter_rows(url, get_config().cache.info, source_id).await;
     let last_12 = &chapter_rows[chapter_rows.len().saturating_sub(12)..];
     let last_chapter: NovelChapter = if chapter_rows.is_empty() {
         NovelChapter::default(row.info_url.as_str())
@@ -69,24 +69,24 @@ pub(crate) async fn get_index_list(
     };
     // 获取总页码 要向上取整
     let total_page =
-        (chapter_rows.len() + CONFIG.index_list_num as usize - 1) / CONFIG.index_list_num as usize;
+        (chapter_rows.len() + get_config().index_list_num as usize - 1) / get_config().index_list_num as usize;
     if page as usize > total_page {
         return Err(TeraRenderError::InvalidId);
     }
     // 根据page计算起始章节索引
-    let start_index = (page - 1) * CONFIG.index_list_num as u64;
-    let end_index = start_index + CONFIG.index_list_num as u64;
+    let start_index = (page - 1) * get_config().index_list_num as u64;
+    let end_index = start_index + get_config().index_list_num as u64;
     // 安全的得到剪切的章节列表
     let end_index = end_index.min(chapter_rows.len() as u64);
     let cut_chapters = &chapter_rows[start_index as usize..end_index as usize];
     // 生成上一页 下一页页码
     let prev_url = if page > 1 {
-        CONFIG.index_url(row.articleid, page - 1)
+        get_config().index_url(row.articleid, page - 1)
     } else {
         row.info_url.to_owned()
     };
     let next_url = if page < total_page as u64 {
-        CONFIG.index_url(row.articleid, page + 1)
+        get_config().index_url(row.articleid, page + 1)
     } else {
         row.info_url.to_owned()
     };
@@ -95,12 +95,12 @@ pub(crate) async fn get_index_list(
         page_urls.push(IndexListPageUrl {
             page: i,
             select: i == page,
-            url: CONFIG.index_url(row.articleid, i),
+            url: get_config().index_url(row.articleid, i),
         });
     }
     let lang_arr = get_lang_tail_array(source_id, url).await;
     // 处理长尾词生成
-    if CONFIG.is_lang {
+    if get_config().is_lang {
         // 交给协程
         gen_lang_tail(source_id, row.articlename.clone())
     }
@@ -116,7 +116,7 @@ pub(crate) async fn get_index_list(
     ctx.insert("page_urls", &page_urls);
     ctx.insert("page", &page);
     ctx.insert("lang_arr", &lang_arr);
-    let template_path = format!("{}/index_list.html", CONFIG.theme_dir);
+    let template_path = format!("{}/index_list.html", get_config().theme_dir);
     let html = render::render_template(app_state.tera.clone(), &template_path, ctx).await?;
     Ok((
         [(axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8")],
@@ -130,12 +130,12 @@ pub(crate) async fn get_lang_index(
     headers: HeaderMap,
     OriginalUri(uri): OriginalUri,
 ) -> Result<impl IntoResponse, TeraRenderError> {
-    if !file_exists(format!("templates/{}/index_list.html", CONFIG.theme_dir)) {
+    if !file_exists(format!("templates/{}/index_list.html", get_config().theme_dir)) {
         println!("No such file or directory");
         return Err(TeraRenderError::InvalidId);
     }
     let lang_id = &p.id;
-    let source_lang_id = CONFIG.source_id(*lang_id);
+    let source_lang_id = get_config().source_id(*lang_id);
     if source_lang_id == 0 {
         return Err(TeraRenderError::InvalidId);
     }
@@ -148,8 +148,8 @@ pub(crate) async fn get_lang_index(
         .and_then(|v| v.to_str().ok())
         .unwrap_or("unknown.host");
     let lang_row = services::lang_tail::get_lang_tail(source_lang_id,url).await.into_iter().next().ok_or(TeraRenderError::InvalidId)?;
-    let mut row = get_novel_info(url, CONFIG.cache.info, lang_row.sourceid).await.into_iter().next().ok_or(TeraRenderError::InvalidId)?;
-    let chapter_rows = services::novel::get_chapter_rows(url, CONFIG.cache.info, lang_row.sourceid).await;
+    let mut row = get_novel_info(url, get_config().cache.info, lang_row.sourceid).await.into_iter().next().ok_or(TeraRenderError::InvalidId)?;
+    let chapter_rows = services::novel::get_chapter_rows(url, get_config().cache.info, lang_row.sourceid).await;
     let last_12 = &chapter_rows[chapter_rows.len().saturating_sub(12)..];
     let last_chapter: NovelChapter = if chapter_rows.is_empty() {
         NovelChapter::default(row.info_url.as_str())
@@ -163,24 +163,24 @@ pub(crate) async fn get_lang_index(
     };
     // 获取总页码 要向上取整
     let total_page =
-        (chapter_rows.len() + CONFIG.index_list_num as usize - 1) / CONFIG.index_list_num as usize;
+        (chapter_rows.len() + get_config().index_list_num as usize - 1) / get_config().index_list_num as usize;
     if page as usize > total_page {
         return Err(TeraRenderError::InvalidId);
     }
     // 根据page计算起始章节索引
-    let start_index = (page - 1) * CONFIG.index_list_num as u64;
-    let end_index = start_index + CONFIG.index_list_num as u64;
+    let start_index = (page - 1) * get_config().index_list_num as u64;
+    let end_index = start_index + get_config().index_list_num as u64;
     // 安全的得到剪切的章节列表
     let end_index = end_index.min(chapter_rows.len() as u64);
     let cut_chapters = &chapter_rows[start_index as usize..end_index as usize];
     // 生成上一页 下一页页码
     let prev_url = if page > 1 {
-        CONFIG.index_url(row.articleid, page - 1)
+        get_config().index_url(row.articleid, page - 1)
     } else {
         row.info_url.to_owned()
     };
     let next_url = if page < total_page as u64 {
-        CONFIG.index_url(row.articleid, page + 1)
+        get_config().index_url(row.articleid, page + 1)
     } else {
         row.info_url.to_owned()
     };
@@ -189,7 +189,7 @@ pub(crate) async fn get_lang_index(
         page_urls.push(IndexListPageUrl {
             page: i,
             select: i == page,
-            url: CONFIG.index_url(row.articleid, i),
+            url: get_config().index_url(row.articleid, i),
         });
     }
     let lang_arr = get_lang_tail_array(lang_row.sourceid,url).await;
@@ -210,7 +210,7 @@ pub(crate) async fn get_lang_index(
     ctx.insert("page_urls", &page_urls);
     ctx.insert("page", &page);
     ctx.insert("lang_arr", &lang_arr);
-    let template_path = format!("{}/index_list.html", CONFIG.theme_dir);
+    let template_path = format!("{}/index_list.html", get_config().theme_dir);
     let html = render::render_template(app_state.tera.clone(), &template_path, ctx).await?;
     Ok((
         [(axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8")],

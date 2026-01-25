@@ -9,7 +9,7 @@ use sea_orm::{DbErr, FromQueryResult, Statement, Value, Values};
 use crate::handlers::define::NOVEL_CHAPTER_FILED;
 use crate::models::novel::{Novel, NovelChapter};
 use crate::utils;
-use crate::utils::conf::CONFIG;
+use crate::utils::conf::get_config;
 use crate::utils::db::conn::get_db_conn_ref;
 use crate::utils::redis::conn::{get_cache_rows};
 use crate::utils::text::time_to_cn;
@@ -25,10 +25,10 @@ pub(crate) fn process_tera_tag(
 ) {
     let http_host = headers.get(HOST).map(|v| v.to_str().ok().unwrap_or("unknown.host")).unwrap_or("unknown.host");
     let request_uri = uri.to_string();
-    ctx.insert("SITE_NAME", &CONFIG.site_name);
+    ctx.insert("SITE_NAME", &get_config().site_name);
     ctx.insert("Uri", &request_uri);
     ctx.insert("SITE_URL", &http_host);
-    ctx.insert("theme", &CONFIG.theme_dir);
+    ctx.insert("theme", &get_config().theme_dir);
 }
 
 pub(crate) fn extract_id(path: &str) -> Option<u64> {
@@ -54,7 +54,7 @@ pub(crate) async fn get_novel_info(
     source_id: u64,
 ) -> Vec<Novel> {
     get_cache_rows(
-        format!("SELECT {filed} FROM {table}article_article WHERE {where} AND articleid = ? LIMIT 1;",filed=CONFIG.get_field(),table=CONFIG.prefix,where=CONFIG.get_where()),
+        format!("SELECT {filed} FROM {table}article_article WHERE {where} AND articleid = ? LIMIT 1;",filed=get_config().get_field(),table=get_config().prefix,where=get_config().get_where()),
         url,
         cache as u64,
         Some(Values(vec![Value::BigUnsigned(Some(source_id))])),
@@ -67,7 +67,7 @@ pub(crate) async fn get_chapter_rows(
     source_id: u64,
 ) -> Vec<NovelChapter> {
     utils::redis::conn::get_chapter_rows(
-        format!("SELECT {filed} FROM {table} WHERE articleid = ? ORDER BY chapterid ASC;",filed=NOVEL_CHAPTER_FILED,table=CONFIG.get_chapter_table(source_id)),
+        format!("SELECT {filed} FROM {table} WHERE articleid = ? ORDER BY chapterid ASC;",filed=NOVEL_CHAPTER_FILED,table=get_config().get_chapter_table(source_id)),
         url,
         cache as u64,
         Some(Values(vec![Value::BigUnsigned(Some(source_id))])),
@@ -126,7 +126,7 @@ pub(crate) async fn common_novel_random(
     cache: u64
 ) -> Vec<Novel> {
     get_cache_rows(
-        format!("SELECT {filed} FROM {table}article_article WHERE articleid >= (SELECT FLOOR(RAND() * (SELECT MAX(articleid) FROM {table}article_article))) ORDER BY lastupdate DESC LIMIT {limit}", filed = CONFIG.get_field(), table = CONFIG.prefix, limit = limit),
+        format!("SELECT {filed} FROM {table}article_article WHERE articleid >= (SELECT FLOOR(RAND() * (SELECT MAX(articleid) FROM {table}article_article))) ORDER BY lastupdate DESC LIMIT {limit}", filed = get_config().get_field(), table = get_config().prefix, limit = limit),
         url,
         cache,
         None,
@@ -180,9 +180,9 @@ pub(crate) fn novel_chapter_mapping(mut rows: Vec<NovelChapter>) -> Vec<NovelCha
     for row in &mut rows {
         let source_id = row.articleid;
         let chapter_id = row.chapterid;
-        row.articleid = CONFIG.new_id(source_id);
-        row.chapterid = CONFIG.new_id(chapter_id);
-        row.read_url = CONFIG.read_url(row.articleid,row.chapterid,1);
+        row.articleid = get_config().new_id(source_id);
+        row.chapterid = get_config().new_id(chapter_id);
+        row.read_url = get_config().read_url(row.articleid,row.chapterid,1);
         row.source_id = chapter_id;
     }
     rows
@@ -193,12 +193,12 @@ pub(crate) fn novel_mapping(mut rows: Vec<Novel>) -> Vec<Novel> {
     for row in &mut rows {
         let source_id = row.articleid;
         row.source_id = source_id;
-        row.articleid = CONFIG.new_id(row.articleid);
-        row.info_url = CONFIG.info_url(row.articleid);
-        row.index_url = CONFIG.index_url(row.articleid,1);
+        row.articleid = get_config().new_id(row.articleid);
+        row.info_url = get_config().info_url(row.articleid);
+        row.index_url = get_config().index_url(row.articleid,1);
         row.intro_des = utils::text::txt_200_des(&row.intro);
-        row.author_url = CONFIG.author_url(&row.author);
-        row.sortname = if let Some(sort_name) = CONFIG.get_sort_name(row.sortid) {
+        row.author_url = get_config().author_url(&row.author);
+        row.sortname = if let Some(sort_name) = get_config().get_sort_name(row.sortid) {
             String::from(sort_name)
         } else {
             String::from(DEFAULT_NAME)
@@ -210,9 +210,9 @@ pub(crate) fn novel_mapping(mut rows: Vec<Novel>) -> Vec<Novel> {
             String::from(SERIALIZE)
         };
         row.words_w = row.words / 10000;
-        row.img_url = CONFIG.get_img_url(source_id,row.imgflag);
+        row.img_url = get_config().get_img_url(source_id,row.imgflag);
         row.lastupdate_cn = time_to_cn(row.lastupdate as i64);
-        row.last_url = CONFIG.read_url(row.articleid,row.lastchapterid,1);
+        row.last_url = get_config().read_url(row.articleid,row.lastchapterid,1);
     }
     rows
 }

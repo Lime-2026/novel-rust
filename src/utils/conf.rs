@@ -1,11 +1,12 @@
 use std::fs::File;
 use std::io::Read;
+use std::sync::Arc;
+use arc_swap::ArcSwap;
 use once_cell::sync::Lazy;
 use crate::models::config::Config;
 
-pub(crate) static CONFIG: Lazy<Config> = Lazy::new(|| {
-    load_config_sync().unwrap()
-});
+pub(crate) static CONFIG: Lazy<ArcSwap<Config>> =
+    Lazy::new(|| ArcSwap::from_pointee(load_config_sync().unwrap()));
 
 /// 加载 JSON 配置文件到 Config 结构体
 pub fn load_config_sync() -> Result<Config, Box<dyn std::error::Error>> {
@@ -19,4 +20,12 @@ pub fn load_config_sync() -> Result<Config, Box<dyn std::error::Error>> {
         config.sort_arr[i].url = url;
     }
     Ok(config)
+}
+
+pub fn get_config() -> Arc<Config> {
+    CONFIG.load_full()
+}
+
+pub fn set_config(config: Config) {
+    CONFIG.store(Arc::new(config));
 }

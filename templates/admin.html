@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>站点配置管理后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        body {
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .config-section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #007bff;
+            margin: 20px 0 15px;
+            padding-left: 10px;
+            border-left: 4px solid #007bff;
+        }
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .form-label {
+            width: 200px;
+            font-weight: 500;
+            color: #555;
+            padding-right: 10px;
+            text-align: right;
+        }
+        .form-control {
+            flex: 1;
+            min-width: 300px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        .checkbox-control {
+            width: 20px;
+            height: 20px;
+        }
+        .checkbox-label {
+            margin-left: 10px;
+            color: #555;
+        }
+        .btn-group {
+            margin: 30px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .btn-success {
+            background: #28a745;
+            color: #fff;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .array-container {
+            margin-left: 210px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            width: calc(100% - 210px);
+        }
+        .array-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .array-item input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn-remove {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-add {
+            margin-top: 10px;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 210px;
+        }
+        .alert {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+        }
+        /* 遮罩层：覆盖整个屏幕，半透明背景 */
+        .alert-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9998; /* 低于弹窗，高于页面内容 */
+            display: none;
+        }
+
+        /* 居中弹窗：固定定位 + 水平垂直居中 */
+        #alertBox {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* 核心：居中 */
+            min-width: 300px;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 9999; /* 高于遮罩层 */
+            display: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .theme-list {
+            margin-left: 210px;
+            margin-top: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: calc(100% - 210px);
+            display: none;
+        }
+        .theme-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>站点配置管理</h1>
+    <!-- 新增遮罩层 -->
+    <div class="alert-mask" id="alertMask"></div>
+    <!-- 原有弹窗容器 -->
+    <div id="alertBox" class="alert"></div>
+    <div class="config-section">
+        <h2 class="section-title">基础配置</h2>
+        <div class="form-group">
+            <label class="form-label">站点名称：</label>
+            <input type="text" id="site_name" class="form-control" placeholder="例如：乌哈">
+        </div>
+        <div class="form-group">
+            <label class="form-label">本站域名：</label>
+            <input type="text" id="site_url" class="form-control" placeholder="例如：http://127.0.0.1:8080">
+        </div>
+        <div class="form-group">
+            <label class="form-label">TXT存储路径：</label>
+            <input type="text" id="txt_url" class="form-control" placeholder="例如：D:/GoStore/queniao/files/article/txt">
+        </div>
+        <div class="form-group">
+            <label class="form-label">系统版本：</label>
+            <select id="sys_ver" class="form-control">
+                <option value="1.7">杰奇1.7 (1.7)</option>
+                <option value="2.4">船说优化与杰奇2.4 (2.4)</option>
+                <option value="6.0">船说分表 (6.0)</option>
+                <option value="7.0">多选 (7.0)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">根目录：</label>
+            <input type="text" id="root_dir" class="form-control" placeholder="例如：D:/GoStore/queniao，非主站可不填">
+        </div>
+        <div class="form-group">
+            <label class="form-label">图片访问地址：</label>
+            <input type="text" id="remote_img_url" class="form-control" placeholder="例如：http://qc.cc/files/article/image">
+        </div>
+        <div class="form-group">
+            <label class="form-label">TXT下载：</label>
+            <input type="checkbox" id="enable_down" class="checkbox-control">
+            <label class="checkbox-label">启用下载（暂未实现）</label>
+        </div>
+        <div class="form-group">
+            <label class="form-label">模板名称：</label>
+            <select id="theme_dir" class="form-control">
+                <option value="">请选择主题</option> <!-- 默认占位选项 -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">首页推荐小说ID：</label>
+            <input type="text" id="commend_ids" class="form-control" placeholder="例如：1,2,3,4,9">
+        </div>
+        <div class="form-group">
+            <label class="form-label">三合一模板：</label>
+            <input type="checkbox" id="is_3in1" class="checkbox-control">
+            <label class="checkbox-label">启用3合一模板（暂未实现）</label>
+        </div>
+        <div class="form-group">
+            <label class="form-label">分类页展示数量：</label>
+            <input type="number" id="category_per_page" class="form-control" min="1" value="20">
+        </div>
+        <div class="form-group">
+            <label class="form-label">章节分页模式：</label>
+            <select id="read_page_split_mode" class="form-control">
+                <option value="0">不启用</option>
+                <option value="1">按行数分页</option>
+                <option value="2">按字数分页</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">章节分页值：</label>
+            <input type="number" id="read_page_split_lines" class="form-control" min="1" value="50">
+        </div>
+        <div class="form-group">
+            <label class="form-label">推荐票数量：</label>
+            <input type="number" id="vote_perday" class="form-control" min="0" value="5">
+        </div>
+        <div class="form-group">
+            <label class="form-label">目录页每页章节数：</label>
+            <input type="number" id="index_list_num" class="form-control" min="1" value="100">
+        </div>
+        <div class="form-group">
+            <label class="form-label">数据库表前缀：</label>
+            <input type="text" id="prefix" class="form-control" placeholder="例如：jieqi_、shipsay_、dx_">
+        </div>
+        <div class="form-group">
+            <label class="form-label">启用长尾词</label>
+            <input type="checkbox" id="is_lang" class="checkbox-control">
+            <label class="checkbox-label">启用长尾词</label>
+        </div>
+        <div class="form-group">
+            <label class="form-label">ID混淆：</label>
+            <input type="checkbox" id="is_multiple" class="checkbox-control">
+            <label class="checkbox-label">混淆ID</label>
+        </div>
+        <div class="form-group">
+            <label class="form-label">混淆值：</label>
+            <input type="number" id="confusion_value" class="form-control" min="1" value="12">
+        </div>
+        <div class="form-group">
+            <label class="form-label">混淆算法：</label>
+            <select id="confusion_algorithm" class="form-control">
+                <option value="+">+（加法）</option>
+                <option value="*">*（乘法）</option>
+                <option value="^">^（异或）</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">敏感词过滤：</label>
+            <input type="text" id="filter" class="form-control" placeholder="例如：敏感词1|敏感词2（暂未兼容）">
+        </div>
+        <div class="form-group">
+            <label class="form-label">友情链接（HTML）：</label>
+            <textarea id="link" class="form-control" rows="3" placeholder='例如：<a href="www.baidu.com" target="_blank">百度</a>'></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">章节报错：</label>
+            <input type="checkbox" id="is_report" class="checkbox-control">
+        </div>
+        <div class="form-group">
+            <label class="form-label">报错间隔（秒）：</label>
+            <input type="number" id="report_time" class="form-control" min="1" value="86400">
+        </div>
+    </div>
+
+    <!-- 伪静态配置 -->
+    <div class="config-section">
+        <h2 class="section-title">伪静态配置</h2>
+        <div class="form-group">
+            <label class="form-label">信息页URL：</label>
+            <input type="text" id="rewrite_info_url" class="form-control" placeholder="/book/{id}.html">
+        </div>
+        <div class="form-group">
+            <label class="form-label">章节页URL：</label>
+            <input type="text" id="rewrite_chapter_url" class="form-control" placeholder="/book/{id}/{cid}/{page}.html">
+        </div>
+        <div class="form-group">
+            <label class="form-label">分类页URL：</label>
+            <input type="text" id="rewrite_sort_url" class="form-control" placeholder="/sort/{code}/{page}.html">
+        </div>
+        <div class="form-group">
+            <label class="form-label">排行单页URL：</label>
+            <input type="text" id="rewrite_top_url" class="form-control" placeholder="/top.html">
+        </div>
+        <div class="form-group">
+            <label class="form-label">历史页面URL：</label>
+            <input type="text" id="rewrite_history_url" class="form-control" placeholder="/history.html">
+        </div>
+        <div class="form-group">
+            <label class="form-label">目录页URL：</label>
+            <input type="text" id="rewrite_index_list_url" class="form-control" placeholder="/book/{id}/{page}.html">
+        </div>
+        <div class="form-group">
+            <label class="form-label">作者页URL：</label>
+            <input type="text" id="rewrite_author_url" class="form-control" placeholder="/author/{name}">
+        </div>
+        <div class="form-group">
+            <label class="form-label">完本页URL：</label>
+            <input type="text" id="rewrite_complete_url" class="form-control" placeholder="">
+        </div>
+        <div class="form-group">
+            <label class="form-label">排行内页URL：</label>
+            <input type="text" id="rewrite_rank_url" class="form-control" placeholder="/rank/{code}.html">
+        </div>
+        <div class="form-group">
+            <label class="form-label">搜索页URL：</label>
+            <input type="text" id="rewrite_search_url" class="form-control" placeholder="/search.html">
+        </div>
+        <div class="form-group">
+            <label class="form-label">长尾词信息页URL：</label>
+            <input type="text" id="rewrite_lang_url" class="form-control" placeholder="/lang/{id}.html">
+        </div>
+        <div class="form-group">
+            <label class="form-label">长尾词目录页URL：</label>
+            <input type="text" id="rewrite_lang_index_url" class="form-control" placeholder="/lang/{id}/{page}.html">
+        </div>
+    </div>
+
+    <!-- 分类配置（数组） -->
+    <div class="config-section">
+        <h2 class="section-title">分类配置</h2>
+        <div class="form-label"></div>
+        <div class="array-container" id="sort_arr_container">
+            <!-- 动态生成分类项 -->
+        </div>
+        <button class="btn-add" onclick="addSortItem()">+ 添加分类</button>
+    </div>
+
+    <!-- 搜索配置 -->
+    <div class="config-section">
+        <h2 class="section-title">搜索配置</h2>
+        <div class="form-group">
+            <label class="form-label">每页条数：</label>
+            <input type="number" id="search_limit" class="form-control" min="1" max="100" value="50">
+        </div>
+        <div class="form-group">
+            <label class="form-label">最小搜索词长度：</label>
+            <input type="number" id="search_min" class="form-control" min="1" value="2">
+        </div>
+        <div class="form-group">
+            <label class="form-label">缓存时间（秒）：</label>
+            <input type="number" id="search_time" class="form-control" min="0" value="3600">
+        </div>
+        <div class="form-group">
+            <label class="form-label">记录搜索词：</label>
+            <input type="checkbox" id="search_is_record" class="checkbox-control">
+            <label class="checkbox-label">（暂未兼容）</label>
+        </div>
+        <div class="form-group">
+            <label class="form-label">搜索间隔（秒）：</label>
+            <input type="number" id="search_delay" class="form-control" value="0" placeholder="-1：禁止搜索 | 0：不限制 | >0：间隔秒数">
+        </div>
+    </div>
+
+    <!-- 缓存配置 -->
+    <div class="config-section">
+        <h2 class="section-title">缓存配置（秒）</h2>
+        <div class="form-group">
+            <label class="form-label">首页缓存：</label>
+            <input type="number" id="cache_home" class="form-control" min="0" value="300">
+        </div>
+        <div class="form-group">
+            <label class="form-label">信息页缓存：</label>
+            <input type="number" id="cache_info" class="form-control" min="0" value="600">
+        </div>
+        <div class="form-group">
+            <label class="form-label">章节页缓存：</label>
+            <input type="number" id="cache_chapter" class="form-control" min="0" value="900">
+        </div>
+        <div class="form-group">
+            <label class="form-label">分类页缓存：</label>
+            <input type="number" id="cache_sort" class="form-control" min="0" value="1200">
+        </div>
+        <div class="form-group">
+            <label class="form-label">排行页缓存：</label>
+            <input type="number" id="cache_rank" class="form-control" min="0" value="1800">
+        </div>
+        <div class="form-group">
+            <label class="form-label">其他页面缓存：</label>
+            <input type="number" id="cache_other" class="form-control" min="0" value="3600">
+        </div>
+    </div>
+
+    <!-- 广告配置（数组） -->
+    <div class="config-section">
+        <h2 class="section-title">广告配置（pos需唯一）</h2>
+        <div class="form-label"></div>
+        <div class="array-container" id="ads_container">
+            <!-- 动态生成广告项 -->
+        </div>
+        <button class="btn-add" onclick="addAdItem()">+ 添加广告</button>
+    </div>
+
+    <!-- 统计代码配置 -->
+    <div class="config-section">
+        <h2 class="section-title">统计代码配置</h2>
+        <div class="form-group">
+            <label class="form-label">统计代码：</label>
+            <textarea id="stat_code" class="form-control" rows="5" placeholder='例如：<script>我是广告代码</script>'></textarea>
+        </div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-success" onclick="saveConfig()">保存配置</button>
+    </div>
+</div>
+
+<script>
+    function showAlert(message, type) {
+        const alertBox = document.getElementById('alertBox');
+        const alertMask = document.getElementById('alertMask');
+        alertMask.style.display = 'block';
+        alertBox.textContent = message;
+        alertBox.className = `alert alert-${type}`;
+        alertBox.style.display = 'block';
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+            alertMask.style.display = 'none';
+        }, 3000);
+
+        // 可选：点击遮罩层关闭弹窗
+        alertMask.onclick = () => {
+            alertBox.style.display = 'none';
+            alertMask.style.display = 'none';
+        };
+    }
+
+    function addSortItem(code = '', caption = '') {
+        const container = document.getElementById('sort_arr_container');
+        const item = document.createElement('div');
+        item.className = 'array-item';
+        item.innerHTML = `
+                <input type="text" class="sort-code" placeholder="分类标识（如dushi）" value="${code}">
+                <input type="text" class="sort-caption" placeholder="分类名称（如都市小说）" value="${caption}">
+                <button class="btn-remove" onclick="removeItem(this)">删除</button>
+            `;
+        container.appendChild(item);
+    }
+
+    function addAdItem(pos = '', code = '') {
+        const container = document.getElementById('ads_container');
+        const item = document.createElement('div');
+        item.className = 'array-item';
+        item.innerHTML = `
+                <input type="text" class="ad-pos" placeholder="广告KEY（如header，需唯一）" value="${pos}">
+                <input type="text" class="ad-code" placeholder="广告代码" value="${code}">
+                <button class="btn-remove" onclick="removeItem(this)">删除</button>
+            `;
+        container.appendChild(item);
+    }
+    function removeItem(btn) {
+        const item = btn.parentElement;
+        item.parentElement.removeChild(item);
+    }
+
+    function getCurrentBasePath() {
+        const pathname = window.location.pathname;
+        const pathSegments = pathname.split('/').filter(segment => segment); // 过滤空字符串
+        let basePath;
+        if (pathSegments.length > 0) {
+            if (pathSegments.includes('admin')) {
+                const adminIndex = pathSegments.indexOf('admin');
+                basePath = '/' + pathSegments.slice(0, adminIndex + 1).join('/');
+            } else {
+                basePath = '/' + pathSegments[0];
+            }
+        } else {
+            basePath = '/admin';
+        }
+        return basePath.replace(/\/$/, '');
+    }
+    const formData = new URLSearchParams();
+    formData.append('token', '{{token}}');
+    formData.append('time', '{{time}}');
+    async function loadConfig() {
+        try {
+            const response = await fetch(`${getCurrentBasePath()}/get`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(`请求失败：${response.status}`);
+            }
+            const res = await response.json();
+            if(res.success === false) {
+                showAlert('加载配置失败：' + res.errors.join("\n"), 'danger');
+                return;
+            }
+            const config = JSON.parse(res.data)
+            document.getElementById('site_name').value = config.site_name || '';
+            document.getElementById('site_url').value = config.site_url || '';
+            document.getElementById('txt_url').value = config.txt_url || '';
+            document.getElementById('sys_ver').value = config.sys_ver || '2.4';
+            document.getElementById('root_dir').value = config.root_dir || '';
+            document.getElementById('remote_img_url').value = config.remote_img_url || '';
+            document.getElementById('enable_down').checked = config.enable_down || false;
+            const themeSelect = document.getElementById('theme_dir').querySelectorAll(`option`);
+            themeSelect.forEach(option => {
+                if(option.value === config.theme_dir) {
+                    option.selected = true;
+                }
+            });
+            document.getElementById('commend_ids').value = config.commend_ids || '';
+            document.getElementById('is_3in1').checked = config.is_3in1 || false;
+            document.getElementById('category_per_page').value = config.category_per_page || 20;
+            document.getElementById('read_page_split_mode').value = config.read_page_split_mode || 1;
+            document.getElementById('read_page_split_lines').value = config.read_page_split_lines || 50;
+            document.getElementById('vote_perday').value = config.vote_perday || 5;
+            document.getElementById('index_list_num').value = config.index_list_num || 100;
+            document.getElementById('prefix').value = config.prefix || 'jieqi_';
+            document.getElementById('is_lang').checked = config.is_lang || false;
+            document.getElementById('is_multiple').checked = config.is_multiple || false;
+            document.getElementById('confusion_value').value = config.confusion_value || 12;
+            document.getElementById('confusion_algorithm').value = config.confusion_algorithm || '^';
+            document.getElementById('filter').value = config.filter || '';
+            document.getElementById('link').value = config.link || '';
+            document.getElementById('is_report').checked = config.is_report || false;
+            document.getElementById('report_time').value = config.report_time || 86400;
+            const rewrite = config.rewrite || {};
+            document.getElementById('rewrite_info_url').value = rewrite.info_url || '';
+            document.getElementById('rewrite_chapter_url').value = rewrite.chapter_url || '';
+            document.getElementById('rewrite_sort_url').value = rewrite.sort_url || '';
+            document.getElementById('rewrite_top_url').value = rewrite.top_url || '';
+            document.getElementById('rewrite_history_url').value = rewrite.history_url || '';
+            document.getElementById('rewrite_index_list_url').value = rewrite.index_list_url || '';
+            document.getElementById('rewrite_author_url').value = rewrite.author_url || '';
+            document.getElementById('rewrite_complete_url').value = rewrite.complete_url || '';
+            document.getElementById('rewrite_rank_url').value = rewrite.rank_url || '';
+            document.getElementById('rewrite_search_url').value = rewrite.search_url || '';
+            document.getElementById('rewrite_lang_url').value = rewrite.lang_url || '';
+            document.getElementById('rewrite_lang_index_url').value = rewrite.lang_index_url || '';
+            const sortArrContainer = document.getElementById('sort_arr_container');
+            sortArrContainer.innerHTML = '';
+            (config.sort_arr || []).forEach(item => {
+                addSortItem(item.code || '', item.caption || '');
+            });
+            if ((config.sort_arr || []).length === 0) {
+                addSortItem();
+            }
+            const search = config.search || {};
+            document.getElementById('search_limit').value = search.limit || 50;
+            document.getElementById('search_min').value = search.min || 2;
+            document.getElementById('search_time').value = search.time || 3600;
+            document.getElementById('search_is_record').checked = search.is_record || false;
+            document.getElementById('search_delay').value = search.delay || 0;
+            const cache = config.cache || {};
+            document.getElementById('cache_home').value = cache.home || 300;
+            document.getElementById('cache_info').value = cache.info || 600;
+            document.getElementById('cache_chapter').value = cache.chapter || 900;
+            document.getElementById('cache_sort').value = cache.sort || 1200;
+            document.getElementById('cache_rank').value = cache.rank || 1800;
+            document.getElementById('cache_other').value = cache.other || 3600;
+            const adsContainer = document.getElementById('ads_container');
+            adsContainer.innerHTML = '';
+            (config.ads || []).forEach(item => {
+                addAdItem(item.pos || '', item.code || '');
+            });
+            if ((config.ads || []).length === 0) {
+                addAdItem();
+            }
+            document.getElementById('stat_code').value = config.stat_code || '';
+        } catch (error) {
+            console.error('加载配置失败：', error);
+            showAlert(`加载配置失败：${error.message}`, 'error');
+        }
+    }
+    async function saveConfig() {
+        try {
+            showAlert('正在保存配置...', 'info');
+            const sortArr = [];
+            document.querySelectorAll('.array-item').forEach(item => {
+                const codeInput = item.querySelector('.sort-code');
+                const captionInput = item.querySelector('.sort-caption');
+                if (codeInput && captionInput) {
+                    const code = codeInput.value.trim();
+                    const caption = captionInput.value.trim();
+                    if (code && caption) {
+                        sortArr.push({ code, caption });
+                    }
+                }
+            });
+
+            // 收集广告配置
+            const ads = [];
+            document.querySelectorAll('.array-item').forEach(item => {
+                const posInput = item.querySelector('.ad-pos');
+                const codeInput = item.querySelector('.ad-code');
+                if (posInput && codeInput) {
+                    const pos = posInput.value.trim();
+                    const code = codeInput.value.trim();
+                    if (pos) { // pos必须唯一且非空
+                        ads.push({ pos, code });
+                    }
+                }
+            });
+
+            // 构建配置对象
+            const config = {
+                // 基础配置
+                site_name: document.getElementById('site_name').value.trim(),
+                site_url: document.getElementById('site_url').value.trim(),
+                txt_url: document.getElementById('txt_url').value.trim(),
+                sys_ver: parseFloat(document.getElementById('sys_ver').value),
+                root_dir: document.getElementById('root_dir').value.trim(),
+                remote_img_url: document.getElementById('remote_img_url').value.trim(),
+                enable_down: document.getElementById('enable_down').checked,
+                theme_dir: document.getElementById('theme_dir').value.trim(),
+                commend_ids: document.getElementById('commend_ids').value.trim(),
+                is_3in1: document.getElementById('is_3in1').checked,
+                category_per_page: parseInt(document.getElementById('category_per_page').value),
+                read_page_split_mode: parseInt(document.getElementById('read_page_split_mode').value),
+                read_page_split_lines: parseInt(document.getElementById('read_page_split_lines').value),
+                vote_perday: parseInt(document.getElementById('vote_perday').value),
+                index_list_num: parseInt(document.getElementById('index_list_num').value),
+                prefix: document.getElementById('prefix').value.trim(),
+                is_lang: document.getElementById('is_lang').checked,
+                is_multiple: document.getElementById('is_multiple').checked,
+                confusion_value: parseInt(document.getElementById('confusion_value').value),
+                confusion_algorithm: document.getElementById('confusion_algorithm').value,
+                filter: document.getElementById('filter').value.trim(),
+                link: document.getElementById('link').value.trim(),
+                is_report: document.getElementById('is_report').checked,
+                report_time: parseInt(document.getElementById('report_time').value),
+
+                // 伪静态配置
+                rewrite: {
+                    info_url: document.getElementById('rewrite_info_url').value.trim(),
+                    chapter_url: document.getElementById('rewrite_chapter_url').value.trim(),
+                    sort_url: document.getElementById('rewrite_sort_url').value.trim(),
+                    top_url: document.getElementById('rewrite_top_url').value.trim(),
+                    history_url: document.getElementById('rewrite_history_url').value.trim(),
+                    index_list_url: document.getElementById('rewrite_index_list_url').value.trim(),
+                    author_url: document.getElementById('rewrite_author_url').value.trim(),
+                    complete_url: document.getElementById('rewrite_complete_url').value.trim(),
+                    rank_url: document.getElementById('rewrite_rank_url').value.trim(),
+                    search_url: document.getElementById('rewrite_search_url').value.trim(),
+                    lang_url: document.getElementById('rewrite_lang_url').value.trim(),
+                    lang_index_url: document.getElementById('rewrite_lang_index_url').value.trim()
+                },
+
+                // 分类配置
+                sort_arr: sortArr,
+
+                // 搜索配置
+                search: {
+                    limit: parseInt(document.getElementById('search_limit').value),
+                    min: parseInt(document.getElementById('search_min').value),
+                    time: parseInt(document.getElementById('search_time').value),
+                    is_record: document.getElementById('search_is_record').checked,
+                    delay: parseInt(document.getElementById('search_delay').value)
+                },
+
+                // 缓存配置
+                cache: {
+                    home: parseInt(document.getElementById('cache_home').value),
+                    info: parseInt(document.getElementById('cache_info').value),
+                    chapter: parseInt(document.getElementById('cache_chapter').value),
+                    sort: parseInt(document.getElementById('cache_sort').value),
+                    rank: parseInt(document.getElementById('cache_rank').value),
+                    other: parseInt(document.getElementById('cache_other').value)
+                },
+
+                // 广告配置
+                ads: ads,
+
+                // 统计代码
+                stat_code: document.getElementById('stat_code').value.trim()
+            };
+
+            // 提交配置
+            const response = await fetch(`${getCurrentBasePath()}/edit?token={{token}}&time={{time}}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(config)
+            });
+
+            if (!response.ok) {
+                throw new Error(`保存失败：${response.status}`);
+            }
+            const res = await response.json();
+            if (res.success !== true) {
+                return showAlert(`保存失败：${res.errors.join("\n")}`, 'error');
+            }
+            showAlert('配置保存成功！', 'success');
+        } catch (error) {
+            console.error('保存配置失败：', error);
+            showAlert(`保存配置失败：${error.message}`, 'error');
+        }
+    }
+    async function loadThemes() {
+        try {
+            const response = await fetch(`${getCurrentBasePath()}/theme`, {
+                method: 'GET',
+            });
+            if (!response.ok) {
+                throw new Error(`请求失败：${response.status}`);
+            }
+            const res = await response.json();
+            const themes = res.data;
+            const themeSelect = document.getElementById('theme_dir');
+            // 5. 动态填充下拉选项
+            themes.forEach(themeName => {
+                const option = document.createElement('option');
+                option.value = themeName;
+                option.textContent = themeName;
+                themeSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('加载主题文件失败：', error);
+        }
+    }
+    window.onload = async function () {
+        await loadThemes()
+        await loadConfig()
+    };
+</script>
+</body>
+</html>

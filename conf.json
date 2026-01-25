@@ -10,22 +10,19 @@
   "commend_ids": "1,2,3,4,9,10,77,51,154,645,14,545",
   "is_3in1": false,
   "category_per_page": 20,
-  "read_page_split_mode": 1,
   "read_page_split_lines": 50,
   "vote_perday": 5,
   "index_list_num": 100,
-  "prefix": "jieqi_",
-  "is_lang": true,
   "rewrite": {
     "info_url": "/book/{id}.html",
     "chapter_url": "/book/{id}/{cid}/{page}.html",
     "sort_url": "/sort/{code}/{page}.html",
     "top_url": "/top.html",
+    "rank_url": "/rank/{code}.html",
+    "complete_url": "",
     "history_url": "/history.html",
     "index_list_url": "/book/{id}/{page}.html",
     "author_url": "/author/{name}",
-    "complete_url": "",
-    "rank_url": "/rank/{code}.html",
     "search_url": "/search.html",
     "lang_url": "/lang/{id}.html",
     "lang_index_url": "/lang/{id}/{page}.html"
@@ -33,44 +30,53 @@
   "sort_arr": [
     {
       "code": "dushi",
-      "caption": "都市小说"
+      "caption": "都市小说",
+      "url": ""
     },
     {
       "code": "yanqing",
-      "caption": "言情小说"
+      "caption": "言情小说",
+      "url": ""
     },
     {
       "code": "wuxia",
-      "caption": "武侠小说"
+      "caption": "武侠小说",
+      "url": ""
     },
     {
       "code": "kehuan",
-      "caption": "科幻小说"
+      "caption": "科幻小说",
+      "url": ""
     },
     {
       "code": "lishi",
-      "caption": "历史军事"
+      "caption": "历史军事",
+      "url": ""
     },
     {
       "code": "kongbu",
-      "caption": "恐怖灵异"
+      "caption": "恐怖灵异",
+      "url": ""
     },
     {
       "code": "wangyou",
-      "caption": "网游竞技"
+      "caption": "网游竞技",
+      "url": ""
     },
     {
       "code": "qita",
-      "caption": "其它小说"
+      "caption": "其它小说",
+      "url": ""
     }
   ],
   "is_multiple": true,
   "confusion_value": 12,
   "confusion_algorithm": "^",
   "filter": "敏感词1|敏感词2",
-  "link": "https://link.example.com",
+  "link": "<a href=\"www.baidu.com\" target=\"_blank\">百度</a>",
   "is_report": true,
   "report_time": 86400,
+  "prefix": "jieqi_",
   "search": {
     "limit": 50,
     "min": 2,
@@ -85,5 +91,18 @@
     "sort": 1200,
     "rank": 1800,
     "other": 3600
-  }
+  },
+  "read_page_split_mode": 1,
+  "is_lang": true,
+  "ads": [
+    {
+      "pos": "header",
+      "code": "header_ad"
+    },
+    {
+      "pos": "header",
+      "code": "header_ad"
+    }
+  ],
+  "stat_code": "<script>我是广告代码12</script>"
 }

@@ -1,6 +1,6 @@
 [package]
 name = "lime_novel"
-version = "0.10.2"
+version = "0.10.3"
 edition = "2024"
 
 [dependencies]
@@ -36,6 +36,7 @@ unicode-segmentation = "1.12"
 time = "0.3"
 hex = "0.4"
 uuid = { version = "0.7", features = ["serde", "v4"] }
+arc-swap = "1.8"
 [profile.release]
 opt-level = 3          # 最高级别优化（默认）
 lto = true             # 链接时优化（大幅减小体积，编译时间变长）

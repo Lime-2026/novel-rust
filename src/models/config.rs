@@ -31,6 +31,8 @@ pub struct Config {
     pub(crate) cache: Cache,
     pub(crate) read_page_split_mode: u8,
     pub(crate) is_lang: bool,
+    pub(crate) ads: Vec<Ads>,
+    pub(crate) stat_code: String,
 }
 
 impl Config {
@@ -152,6 +154,11 @@ impl Config {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Ads {
+    pub pos: String,
+    pub code: String,
+}
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Rewrite {
     pub(crate) info_url: String,

@@ -9,3 +9,4 @@ pub(crate) mod rank;
 pub(crate) mod history;
 pub(crate) mod search;
 pub(crate) mod user;
+pub(crate) mod admin;

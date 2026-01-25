@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::{routes, services, utils};
 use crate::models::novel::Novel;
 use crate::services::novel::extract_str;
-use crate::utils::conf::CONFIG;
+use crate::utils::conf::get_config;
 use crate::utils::file::file_exists;
 use crate::utils::templates::render;
 use crate::utils::templates::render::TeraRenderError;
@@ -42,7 +42,7 @@ pub(crate) async fn get_rank(
     headers: HeaderMap,
     OriginalUri(uri): OriginalUri,
 ) -> Result<impl IntoResponse, TeraRenderError> {
-    if !file_exists(format!("templates/{}/rank.html", CONFIG.theme_dir)) {
+    if !file_exists(format!("templates/{}/rank.html", get_config().theme_dir)) {
         println!("No such file or directory");
         return Err(TeraRenderError::InvalidId);
     }
@@ -59,9 +59,9 @@ pub(crate) async fn get_rank(
         .and_then(|v| v.to_str().ok()) // 安全转换为字符串
         .unwrap_or("unknown.host");
     let rows = utils::redis::conn::get_cache_rows(
-        format!("SELECT {filed} FROM {table}article_article WHERE {where} ORDER BY ? DESC LIMIT 100;", filed = CONFIG.get_field(), table = CONFIG.prefix, where = CONFIG.get_where()),
+        format!("SELECT {filed} FROM {table}article_article WHERE {where} ORDER BY ? DESC LIMIT 100;", filed = get_config().get_field(), table = get_config().prefix, where = get_config().get_where()),
         url,
-        CONFIG.cache.rank as u64,
+        get_config().cache.rank as u64,
         Some(Values(vec![Value::String(Some(code.to_owned()))])),
     ).await;
     // 开始生成nav
@@ -69,7 +69,7 @@ pub(crate) async fn get_rank(
     for (k, v) in RANK_NAV_ITEMS {
         rank_urls.push(RankUrls {
             title: v.to_string(),
-            url:  CONFIG.rank_url(k),
+            url:  get_config().rank_url(k),
             select: *k == key,
         });
     }
@@ -78,7 +78,7 @@ pub(crate) async fn get_rank(
     ctx.insert("title", &title);
     ctx.insert("rows", &rows);
     ctx.insert("rank_nav", &rank_urls);
-    let template_path = format!("{}/rank.html", CONFIG.theme_dir);
+    let template_path = format!("{}/rank.html", get_config().theme_dir);
     let html = render::render_template(app_state.tera.clone(), &template_path, ctx).await?;
     Ok((
         [(axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8")],
@@ -91,7 +91,7 @@ pub(crate) async fn get_top(
     headers: HeaderMap,
     OriginalUri(uri): OriginalUri,
 ) -> Result<impl IntoResponse, TeraRenderError>{
-    if !file_exists(format!("templates/{}/top.html", CONFIG.theme_dir)) {
+    if !file_exists(format!("templates/{}/top.html", get_config().theme_dir)) {
         println!("No such file or directory");
         return Err(TeraRenderError::InvalidId);
     }
@@ -100,27 +100,28 @@ pub(crate) async fn get_top(
         .get(HOST)
         .and_then(|v| v.to_str().ok()) // 安全转换为字符串
         .unwrap_or("unknown.host");
-    for (i, v) in CONFIG.sort_arr.iter().enumerate() {
+    let conf = get_config();
+    for (i, v) in conf.sort_arr.iter().enumerate() {
         let k = i + 1;
-        let allvisit = format!("SELECT {filed} FROM {table}article_article WHERE {where} AND sortid = {sort_id} ORDER BY allvisit DESC LIMIT 50;", filed = CONFIG.get_field(), table = CONFIG.prefix, where = CONFIG.get_where(), sort_id = k);
-        let monthvisit = format!("SELECT {filed} FROM {table}article_article WHERE {where} AND sortid = {sort_id} ORDER BY monthvisit DESC LIMIT 50;", filed = CONFIG.get_field(), table = CONFIG.prefix, where = CONFIG.get_where(), sort_id = k);
-        let weekvisit = format!("SELECT {filed} FROM {table}article_article WHERE {where} AND sortid = {sort_id} ORDER BY weekvisit DESC LIMIT 50;", filed = CONFIG.get_field(), table = CONFIG.prefix, where = CONFIG.get_where(), sort_id = k);
+        let allvisit = format!("SELECT {filed} FROM {table}article_article WHERE {where} AND sortid = {sort_id} ORDER BY allvisit DESC LIMIT 50;", filed = get_config().get_field(), table = get_config().prefix, where = get_config().get_where(), sort_id = k);
+        let monthvisit = format!("SELECT {filed} FROM {table}article_article WHERE {where} AND sortid = {sort_id} ORDER BY monthvisit DESC LIMIT 50;", filed = get_config().get_field(), table = get_config().prefix, where = get_config().get_where(), sort_id = k);
+        let weekvisit = format!("SELECT {filed} FROM {table}article_article WHERE {where} AND sortid = {sort_id} ORDER BY weekvisit DESC LIMIT 50;", filed = get_config().get_field(), table = get_config().prefix, where = get_config().get_where(), sort_id = k);
         let allvisit_rows = utils::redis::conn::get_cache_rows(
             allvisit,
             url,
-            CONFIG.cache.rank as u64,
+            get_config().cache.rank as u64,
             None,
         ).await;
         let monthvisit_rows = utils::redis::conn::get_cache_rows(
             monthvisit,
             url,
-            CONFIG.cache.rank as u64,
+            get_config().cache.rank as u64,
             None,
         ).await;
         let weekvisit_rows = utils::redis::conn::get_cache_rows(
             weekvisit,
             url,
-            CONFIG.cache.rank as u64,
+            get_config().cache.rank as u64,
             None,
         ).await;
         let rank_map: HashMap<&str, Vec<Novel>> = HashMap::from([
@@ -136,7 +137,7 @@ pub(crate) async fn get_top(
     for (k, v) in RANK_NAV_ITEMS {
         rank_urls.push(RankUrls {
             title: v.to_string(),
-            url:  CONFIG.rank_url(k),
+            url:  get_config().rank_url(k),
             select: false,
         });
     }
@@ -144,7 +145,7 @@ pub(crate) async fn get_top(
     services::novel::process_tera_tag(&headers, &uri, &mut ctx);
     ctx.insert("rank_nav", &rank_urls);
     ctx.insert("rows", &rows);
-    let template_path = format!("{}/top.html", CONFIG.theme_dir);
+    let template_path = format!("{}/top.html", get_config().theme_dir);
     let html = render::render_template(app_state.tera.clone(), &template_path, ctx).await?;
     Ok((
         [(axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8")],

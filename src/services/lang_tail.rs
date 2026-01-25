@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 use sea_orm::{ConnectionTrait, DbErr, FromQueryResult, Statement, Value};
 use crate::models::novel::{LangTail};
-use crate::utils::conf::CONFIG;
+use crate::utils::conf::get_config;
 use crate::utils::db::conn::get_db_conn_ref;
 use crate::utils::redis::conn::{cache_get_json, cache_set_json, get_redis_conn};
 use crate::utils::templates::db::TOKIO_RT;
@@ -57,7 +57,7 @@ pub(crate) async fn get_lang_tail(
     source_id: u64,
     url: &str,
 ) -> Result<LangTail, DbErr> {
-    let sql = format!("SELECT langid,sourceid,langname,uptime FROM {}article_langtail WHERE langid = ?", CONFIG.prefix);
+    let sql = format!("SELECT langid,sourceid,langname,uptime FROM {}article_langtail WHERE langid = ?", get_config().prefix);
     let key_seed = format!("{}|{}|{:?}", url, sql, source_id);
     let key = format!("novel:langtail:{:x}", md5::compute(key_seed));
     let redis = get_redis_conn().await;
@@ -71,7 +71,7 @@ pub(crate) async fn get_lang_tail(
     let rows = LangTail::find_by_statement(stmt).one(db).await;
     if let Ok(Some(mut row)) = rows {
         if let Some(ref redis_arc) = redis {
-            let _ = cache_set_json(Some(redis_arc), &key, &row, CONFIG.cache.info as u64).await;
+            let _ = cache_set_json(Some(redis_arc), &key, &row, get_config().cache.info as u64).await;
         }
         Ok(mapping_langtail(&mut row))
     } else {
@@ -83,10 +83,10 @@ pub(crate) async fn get_lang_tail_array(
     article_id: u64,
     url: &str,
 ) -> Vec<LangTail> {
-    if !CONFIG.is_lang {
+    if !get_config().is_lang {
         return Vec::new();
     }
-    let sql = format!("SELECT langid,sourceid,langname,uptime FROM {}article_langtail WHERE sourceid = ?", CONFIG.prefix);
+    let sql = format!("SELECT langid,sourceid,langname,uptime FROM {}article_langtail WHERE sourceid = ?", get_config().prefix);
     let key_seed = format!("{}|{}|{:?}", url, sql, article_id);
     let key = format!("novel:langtail:rows:{:x}", md5::compute(key_seed));
     let redis = get_redis_conn().await;
@@ -103,7 +103,7 @@ pub(crate) async fn get_lang_tail_array(
     });
     if !rows.is_empty() {
         if let Some(ref redis_arc) = redis {
-            let _ = cache_set_json(Some(redis_arc), &key, &rows, CONFIG.cache.info as u64).await;
+            let _ = cache_set_json(Some(redis_arc), &key, &rows, get_config().cache.info as u64).await;
         }
     }
      mapping_langtail_array(&mut rows)
@@ -128,7 +128,7 @@ pub(crate) fn gen_lang_tail(article_id: u64, article_name: String) {
 
 async fn gen_lang_tail_impl(article_id: u64, article_name: String) -> Result<(), DbErr> {
     let db = get_db_conn_ref().await;
-    let sql = format!("SELECT uptime FROM {}article_langtail WHERE sourceid = ? ORDER BY uptime DESC LIMIT 1", CONFIG.prefix);
+    let sql = format!("SELECT uptime FROM {}article_langtail WHERE sourceid = ? ORDER BY uptime DESC LIMIT 1", get_config().prefix);
     let stmt = Statement::from_sql_and_values(
         db.get_database_backend(),
         sql,
@@ -183,7 +183,7 @@ async fn batch_upsert_langtail(article_id: u64,article_name :String, names: Hash
     let sql = format!(
         "INSERT INTO {}article_langtail (sourceid, langname, uptime) VALUES {} \
          ON DUPLICATE KEY UPDATE uptime = VALUES(uptime)",
-        CONFIG.prefix,
+        get_config().prefix,
         values_sql
     );
     let stmt = Statement::from_sql_and_values(db.get_database_backend(), sql, vals);
@@ -191,9 +191,9 @@ async fn batch_upsert_langtail(article_id: u64,article_name :String, names: Hash
 }
 
 fn mapping_langtail(row: &mut LangTail) -> LangTail {
-    let new_id = CONFIG.new_id(row.langid);
-    row.info_url =  CONFIG.lang_info_url(new_id);
-    row.index_url = CONFIG.lang_index_url(new_id,1);
+    let new_id = get_config().new_id(row.langid);
+    row.info_url =  get_config().lang_info_url(new_id);
+    row.index_url = get_config().lang_index_url(new_id,1);
     row.clone()
 }
 

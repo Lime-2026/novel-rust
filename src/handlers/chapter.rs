@@ -1,5 +1,4 @@
-use crate::utils::templates::render;
-use crate::utils::templates::render::TeraRenderError;
+use crate::utils::templates::render::{TeraRenderError,render_template};
 use crate::utils::text::{read_page_split, str_to_p};
 use crate::{routes, services};
 use axum::extract::{OriginalUri, Path, State};
@@ -10,7 +9,7 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::Deserialize;
 use unicode_segmentation::UnicodeSegmentation;
-use crate::utils::conf::CONFIG;
+use crate::utils::conf::get_config;
 use crate::utils::file::file_exists;
 
 static BR_REGEX: Lazy<Regex> =
@@ -31,7 +30,7 @@ pub(crate) async fn get_chapter(
     headers: HeaderMap,
     OriginalUri(uri): OriginalUri,
 ) -> Result<impl IntoResponse, TeraRenderError> {
-    if !file_exists(format!("templates/{}/chapter.html", CONFIG.theme_dir)) {
+    if !file_exists(format!("templates/{}/chapter.html", get_config().theme_dir)) {
         println!("No such file or directory");
         return Err(TeraRenderError::InvalidId);
     }
@@ -44,7 +43,7 @@ pub(crate) async fn get_chapter(
     let mut next_page_url = String::new();
     let mut prev_page_url = String::new();
     // 判断是否船说兼容格式 _1
-    if CONFIG.rewrite.chapter_url.contains("{s_cid}") {
+    if get_config().rewrite.chapter_url.contains("{s_cid}") {
         // 包含船说兼容 那么取s_cid值后判断是否包含_
         if let Some(s_cid) = p.s_cid {
             if s_cid.contains("_") {
@@ -79,20 +78,20 @@ pub(crate) async fn get_chapter(
         // cid必须存在
         return Err(TeraRenderError::InvalidId);
     }
-    let source_id =CONFIG.source_id(id);
-    let source_chapter_id = CONFIG.source_id(cid);
+    let source_id =get_config().source_id(id);
+    let source_chapter_id = get_config().source_id(cid);
     let url = headers
         .get(HOST)
         .and_then(|v| v.to_str().ok()) // 安全转换为字符串
         .unwrap_or("unknown.host");
     let row =
-        services::novel::get_novel_info(url, CONFIG.cache.info, source_id)
+        services::novel::get_novel_info(url, get_config().cache.info, source_id)
             .await
             .into_iter()
             .next()
             .ok_or(TeraRenderError::InvalidId)?;
     let chapter_rows =
-        services::novel::get_chapter_rows(url, CONFIG.cache.info, source_id)
+        services::novel::get_chapter_rows(url, get_config().cache.info, source_id)
             .await;
     let chapter = chapter_rows
         .iter()
@@ -102,7 +101,7 @@ pub(crate) async fn get_chapter(
         .iter()
         .position(|c| c.chapterid == cid)
         .ok_or(TeraRenderError::InvalidId)?;
-    let info_url = if CONFIG.is_3in1 {
+    let info_url = if get_config().is_3in1 {
         row.index_url.clone()
     } else {
         row.info_url.clone()
@@ -110,18 +109,18 @@ pub(crate) async fn get_chapter(
     let next_url = if chapter_index == chapter_rows.len() - 1 {
         info_url.clone()
     } else {
-        CONFIG.read_url(row.articleid, chapter_rows[chapter_index + 1].chapterid, 1)
+        get_config().read_url(row.articleid, chapter_rows[chapter_index + 1].chapterid, 1)
     };
     let prev_url = if chapter_index == 0 {
         info_url.clone()
     } else {
-        CONFIG
+        get_config()
             .read_url(row.articleid, chapter_rows[chapter_index - 1].chapterid, 1)
     };
     // 拼接小说章节内容
     let txt_url = format!(
         "{}/{}/{}/{}.txt",
-        CONFIG.txt_url,
+        get_config().txt_url,
         source_id / 1000,
         source_id,
         source_chapter_id
@@ -131,25 +130,25 @@ pub(crate) async fn get_chapter(
         chapter_content = "章节正在手打中，请稍后重新访问！".to_string();
     } else {
         chapter_content = BR_REGEX.replace_all(&chapter_content, "\n").to_string();
-        match CONFIG.read_page_split_mode {
+        match get_config().read_page_split_mode {
             1 => {  // 按行数分
-                if CONFIG.read_page_split_lines
+                if get_config().read_page_split_lines
                     < chapter_content.split("\n").count() as u32
                 {
                     (chapter_content, max_pid) =
-                        read_page_split(&chapter_content, Some(CONFIG.read_page_split_lines as usize), Some(page as usize));
+                        read_page_split(&chapter_content, Some(get_config().read_page_split_lines as usize), Some(page as usize));
                     if page > max_pid {
                         return Err(TeraRenderError::InvalidId);
                     }
                     if page > 1 {
-                        prev_page_url = CONFIG.read_url(
+                        prev_page_url = get_config().read_url(
                             row.articleid,
                             cid,
                             page - 1,
                         )
                     }
                     if page < max_pid {
-                        next_page_url = CONFIG.read_url(
+                        next_page_url = get_config().read_url(
                             row.articleid,
                             cid,
                             page + 1,
@@ -158,7 +157,7 @@ pub(crate) async fn get_chapter(
                 }
             }
             2 => {  // 按字数分
-                let per_page = CONFIG.read_page_split_lines as usize;
+                let per_page = get_config().read_page_split_lines as usize;
                 let all_words = chapter_content.graphemes(true).count();
                 let max_pid = all_words.div_ceil(per_page) as u64;
                 if page > max_pid {
@@ -172,14 +171,14 @@ pub(crate) async fn get_chapter(
                     .collect();
                 chapter_content = str_to_p(&page_text);
                 if page > 1 {
-                    prev_page_url = CONFIG.read_url(
+                    prev_page_url = get_config().read_url(
                         row.articleid,
                         cid,
                         page - 1,
                     )
                 }
                 if page < max_pid {
-                    next_page_url = CONFIG.read_url(
+                    next_page_url = get_config().read_url(
                         row.articleid,
                         cid,
                         page + 1,
@@ -202,8 +201,8 @@ pub(crate) async fn get_chapter(
     ctx.insert("max_page", &max_pid);
     ctx.insert("page", &page);
     ctx.insert("info_url", &info_url);
-    let template_path = format!("{}/chapter.html", CONFIG.theme_dir);
-    let html = render::render_template(app_state.tera.clone(), &template_path, ctx).await?;
+    let template_path = format!("{}/chapter.html", get_config().theme_dir);
+    let html = render_template(app_state.tera.clone(), &template_path, ctx).await?;
     Ok((
         [(axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8")],
         html,

@@ -1,3 +1,4 @@
+use std::env;
 use std::sync::Arc;
 use axum::{middleware, Router};
 use axum::routing::{get, post};
@@ -16,10 +17,10 @@ use crate::handlers::sort::get_sort;
 use crate::handlers::user::bookcase::{add_bookcase, del_bookcase, get_bookcase, login_auth};
 use crate::handlers::user::login::{get_login, post_login};
 use crate::handlers::user::register::{get_logout, get_register, post_register};
-use crate::utils;
-use crate::utils::conf::CONFIG;
+use crate::utils::conf::{get_config};
 use crate::utils::db::conn::{init_conn, DB_CONN};
-
+use crate::handlers::admin::index::{admin_conf_edit, admin_conf_get, admin_theme, index};
+use crate::utils::templates::init::init_tera;
 #[derive(Clone)]
 #[allow(dead_code)]
 pub struct AppState {
@@ -29,30 +30,35 @@ pub struct AppState {
 pub async fn router() -> Router {
     let db = init_conn().await.expect("初始化数据库连接失败");
     DB_CONN.set(db).expect("DB_CONN 已经初始化过了");
-    let tera = utils::templates::init::init_tera().unwrap();
+    let tera = init_tera().unwrap();
     let template_names: Vec<&str> = tera.get_template_names().collect();
     eprintln!("已加载模板：{:?}", template_names);
     let mut router = Router::new();
-    if CONFIG.is_lang {
-        router = router.route(trim_suffix(CONFIG.rewrite.lang_url.as_str()), get(get_lang))
-            .route(trim_suffix(CONFIG.rewrite.lang_index_url.as_str()), get(get_lang_index));
+    let admin_url = env::var("ADMIN_URL").unwrap_or_else(|_| "/admin".to_string());
+    if get_config().is_lang {
+        router = router.route(trim_suffix(get_config().rewrite.lang_url.as_str()), get(get_lang))
+            .route(trim_suffix(get_config().rewrite.lang_index_url.as_str()), get(get_lang_index));
     }
     router.route("/", get(get_index))
-        .route(trim_suffix(CONFIG.rewrite.info_url.as_str()), get(get_info))
-        .route(trim_suffix(CONFIG.rewrite.index_list_url.as_str()), get(get_index_list))
-        .route(trim_suffix(CONFIG.rewrite.chapter_url.as_str()), get(get_chapter))
-        .route(trim_suffix(CONFIG.rewrite.sort_url.as_str()).replace("{id}","{code}").as_str(), get(get_sort))    // 在注册的时候，将 {id} 替换为 {code}
-        .route(trim_suffix(CONFIG.rewrite.author_url.as_str()), get(get_author))
-        .route(trim_suffix(CONFIG.rewrite.rank_url.as_str()), get(get_rank))
-        .route(trim_suffix(CONFIG.rewrite.top_url.as_str()), get(get_top))
-        .route(CONFIG.rewrite.history_url.as_str(),get(get_history))
-        .route(CONFIG.rewrite.search_url.as_str(), get(get_search).post(post_search))
+        .route(trim_suffix(get_config().rewrite.info_url.as_str()), get(get_info))
+        .route(trim_suffix(get_config().rewrite.index_list_url.as_str()), get(get_index_list))
+        .route(trim_suffix(get_config().rewrite.chapter_url.as_str()), get(get_chapter))
+        .route(trim_suffix(get_config().rewrite.sort_url.as_str()).replace("{id}","{code}").as_str(), get(get_sort))    // 在注册的时候，将 {id} 替换为 {code}
+        .route(trim_suffix(get_config().rewrite.author_url.as_str()), get(get_author))
+        .route(trim_suffix(get_config().rewrite.rank_url.as_str()), get(get_rank))
+        .route(trim_suffix(get_config().rewrite.top_url.as_str()), get(get_top))
+        .route(get_config().rewrite.history_url.as_str(),get(get_history))
+        .route(get_config().rewrite.search_url.as_str(), get(get_search).post(post_search))
         .route("/login", get(get_login).post(post_login))
         .route("/register", get(get_register).post(post_register))
         .route("/bookcase", get(get_bookcase).layer(middleware::from_fn(login_auth)))
         .route("/delbookcase", post(del_bookcase).layer(middleware::from_fn(login_auth)))
         .route("/addbookcase", post(add_bookcase).layer(middleware::from_fn(login_auth)))
         .route("/logout", get(get_logout))
+        .route(&admin_url, get(index))
+        .route(format!("{}/get",admin_url).as_str(), post(admin_conf_get))
+        .route(format!("{}/edit",admin_url).as_str(), post(admin_conf_edit))
+        .route(format!("{}/theme",admin_url).as_str(), get(admin_theme))
         .nest_service("/static", ServeDir::new("public"))
         .layer(CompressionLayer::new())
         .with_state(AppState { tera})
