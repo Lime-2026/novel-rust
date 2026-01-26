@@ -261,7 +261,14 @@
         <div class="form-group">
             <label class="form-label">模板名称：</label>
             <select id="theme_dir" class="form-control">
-                <option value="">请选择主题</option> <!-- 默认占位选项 -->
+                {% if themes|length > 0 %}
+                <option value="">请选择主题</option>
+                {% for theme in themes %}
+                <option value="{{ theme }}">{{ theme }}</option>
+                {% endfor %}
+                {% else %}
+                <option value="">暂无主题</option>
+                {% endif %}
             </select>
         </div>
         <div class="form-group">
@@ -771,30 +778,7 @@
             showAlert(`保存配置失败：${error.message}`, 'error');
         }
     }
-    async function loadThemes() {
-        try {
-            const response = await fetch(`${getCurrentBasePath()}/theme`, {
-                method: 'GET',
-            });
-            if (!response.ok) {
-                throw new Error(`请求失败：${response.status}`);
-            }
-            const res = await response.json();
-            const themes = res.data;
-            const themeSelect = document.getElementById('theme_dir');
-            // 5. 动态填充下拉选项
-            themes.forEach(themeName => {
-                const option = document.createElement('option');
-                option.value = themeName;
-                option.textContent = themeName;
-                themeSelect.appendChild(option);
-            });
-        } catch (error) {
-            console.error('加载主题文件失败：', error);
-        }
-    }
     window.onload = async function () {
-        await loadThemes()
         await loadConfig()
     };
 </script>

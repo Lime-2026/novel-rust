@@ -17,13 +17,6 @@ pub(crate) struct AdminFrom {
     pub(crate) time: Option<u64>
 }
 
-pub(crate) async fn admin_theme(
-    
-) -> impl IntoResponse {
-    let folders = get_folders("templates");
-    ApiResponse::success("success", Some(folders))
-}
-
 pub(crate) async fn admin_conf_edit(
     Query(params): Query<AdminFrom>,
     Json(body): Json<Config>
@@ -98,6 +91,8 @@ pub(crate) async fn index(
         }
     }
     let new_token = format!("{:x}",md5::compute(format!("{token}{time}",token=token,time=time)));
+    let folders = get_folders("templates");
+    ctx.insert("themes", &folders);
     ctx.insert("token", &new_token);
     ctx.insert("time", &time);
     let html = render_template(app_state.tera.clone(), "admin.html", ctx).await?;

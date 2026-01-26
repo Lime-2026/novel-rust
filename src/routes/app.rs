@@ -19,7 +19,7 @@ use crate::handlers::user::login::{get_login, post_login};
 use crate::handlers::user::register::{get_logout, get_register, post_register};
 use crate::utils::conf::{get_config};
 use crate::utils::db::conn::{init_conn, DB_CONN};
-use crate::handlers::admin::index::{admin_conf_edit, admin_conf_get, admin_theme, index};
+use crate::handlers::admin::index::{admin_conf_edit, admin_conf_get, index};
 use crate::utils::templates::init::init_tera;
 #[derive(Clone)]
 #[allow(dead_code)]
@@ -58,7 +58,6 @@ pub async fn router() -> Router {
         .route(&admin_url, get(index))
         .route(format!("{}/get",admin_url).as_str(), post(admin_conf_get))
         .route(format!("{}/edit",admin_url).as_str(), post(admin_conf_edit))
-        .route(format!("{}/theme",admin_url).as_str(), get(admin_theme))
         .nest_service("/static", ServeDir::new("public"))
         .layer(CompressionLayer::new())
         .with_state(AppState { tera})
