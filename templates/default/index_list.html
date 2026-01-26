@@ -81,7 +81,7 @@
     <div class="section">
         <div class="chapters-card">
             <div class="pagination-wrapper">
-                <a href="{{prev_url}}" class="pagination-btn {% if prev_url == detail.info_url %}pagination-btn--disabled{% endif %}">
+                <a href="{{prev_url}}" class="pagination-btn {% if page == 1 %}pagination-btn--disabled{% endif %}">
                     上一页
                 </a>
                 <div class="pagination-select-wrap">
@@ -93,7 +93,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <a href="{{next_url}}" class="pagination-btn {% if next_url == detail.info_url %}pagination-btn--disabled{% endif %}">
+                <a href="{{next_url}}" class="pagination-btn {% if page >= total_page %}pagination-btn--disabled{% endif %}">
                     下一页
                 </a>
             </div>

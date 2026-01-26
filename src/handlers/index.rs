@@ -13,8 +13,6 @@ pub async fn get_index(
     headers: HeaderMap,
     OriginalUri(uri): OriginalUri,
 ) -> Result<impl IntoResponse, render::TeraRenderError> {
-    let mut ctx = tera::Context::new();
-    services::novel::process_tera_tag(&headers, &uri, &mut ctx);
     let template_path = format!("{}/index.html", get_config().theme_dir);
     let url = headers
         .get(HOST)
@@ -59,6 +57,8 @@ pub async fn get_index(
         get_config().cache.home as u64,
         None,
     ).await;
+    let mut ctx = tera::Context::new();
+    services::novel::process_tera_tag(&headers, &uri, &mut ctx);
     ctx.insert("commend", &commend);
     ctx.insert("postdate", &postdate);
     ctx.insert("sortarr", &sortarr);

@@ -9,8 +9,8 @@ use crate::handlers::author::get_author;
 use crate::handlers::chapter::get_chapter;
 use crate::handlers::history::get_history;
 use crate::handlers::index::{get_index};
-use crate::handlers::index_list::{get_index_list, get_lang_index};
-use crate::handlers::info::{get_info, get_lang};
+use crate::handlers::index_list::{get_index_list_page, get_lang_index_list_page};
+use crate::handlers::info::{ get_info_3in1, get_lang_info_3in1};
 use crate::handlers::rank::{get_rank, get_top};
 use crate::handlers::search::{get_search, post_search};
 use crate::handlers::sort::get_sort;
@@ -36,12 +36,12 @@ pub async fn router() -> Router {
     let mut router = Router::new();
     let admin_url = env::var("ADMIN_URL").unwrap_or_else(|_| "/admin".to_string());
     if get_config().is_lang {
-        router = router.route(trim_suffix(get_config().rewrite.lang_url.as_str()), get(get_lang))
-            .route(trim_suffix(get_config().rewrite.lang_index_url.as_str()), get(get_lang_index));
+        router = router.route(trim_suffix(get_config().rewrite.lang_url.as_str()), get(get_lang_info_3in1))
+            .route(trim_suffix(get_config().rewrite.lang_index_url.as_str()), get(get_lang_index_list_page));
     }
     router.route("/", get(get_index))
-        .route(trim_suffix(get_config().rewrite.info_url.as_str()), get(get_info))
-        .route(trim_suffix(get_config().rewrite.index_list_url.as_str()), get(get_index_list))
+        .route(trim_suffix(get_config().rewrite.info_url.as_str()), get(get_info_3in1))
+        .route(trim_suffix(get_config().rewrite.index_list_url.as_str()), get(get_index_list_page))
         .route(trim_suffix(get_config().rewrite.chapter_url.as_str()), get(get_chapter))
         .route(trim_suffix(get_config().rewrite.sort_url.as_str()).replace("{id}","{code}").as_str(), get(get_sort))    // 在注册的时候，将 {id} 替换为 {code}
         .route(trim_suffix(get_config().rewrite.author_url.as_str()), get(get_author))

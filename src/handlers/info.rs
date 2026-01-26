@@ -1,10 +1,11 @@
 use crate::utils::templates::render;
 use crate::{routes, services};
 use axum::extract::{OriginalUri, Path, State};
-use axum::http::{HeaderMap};
+use axum::http::{HeaderMap, Uri};
 use axum::http::header::HOST;
-use axum::response::IntoResponse;
+use axum::response::{IntoResponse, Response};
 use serde::Deserialize;
+use crate::handlers::index_list::{get_index_list, get_lang_index, IndexListPath};
 use crate::models::novel::NovelChapter;
 use crate::services::lang_tail::{gen_lang_tail, get_lang_tail_array};
 use crate::utils::templates::render::TeraRenderError;
@@ -18,13 +19,42 @@ pub(crate) struct BookPath {
     id: String,
 }
 
-pub(crate) async fn get_info(
+pub(crate) async fn get_info_3in1(
     Path(p): Path<BookPath>,
     State(app_state): State<routes::app::AppState>,
     headers: HeaderMap,
     OriginalUri(uri): OriginalUri,
 ) -> Result<impl IntoResponse, TeraRenderError> {
     let id = extract_id(&p.id).ok_or(TeraRenderError::InvalidId)?;
+    // 处理三合一模板
+    if get_config().is_3in1 {
+        get_index_list(IndexListPath{id: id.clone(),sid: p.sid.clone(),page: 1.to_string()},app_state,headers,uri).await
+    } else {
+        get_info(id,app_state,headers,uri).await
+    }
+}
+
+pub(crate) async fn get_lang_info_3in1(
+    Path(p): Path<BookPath>,
+    State(app_state): State<routes::app::AppState>,
+    headers: HeaderMap,
+    OriginalUri(uri): OriginalUri,
+) -> Result<impl IntoResponse, TeraRenderError> {
+    let id = extract_id(&p.id).ok_or(TeraRenderError::InvalidId)?;
+    // 处理三合一模板
+    if get_config().is_3in1 {
+        get_lang_index(IndexListPath{id: id.clone(),sid: p.sid.clone(),page: 1.to_string()},app_state,headers,uri).await
+    } else {
+        get_lang(id,app_state,headers,uri).await
+    }
+}
+
+pub(crate) async fn get_info(
+    id: u64,
+    app_state: routes::app::AppState,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, TeraRenderError> {
     let source_id = get_config().source_id(id);
     let url = headers
         .get(HOST)
@@ -63,16 +93,15 @@ pub(crate) async fn get_info(
     Ok((
         [(axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8")],
         html,
-    ))
+    ).into_response())
 }
 
 pub(crate) async fn get_lang(
-    Path(p): Path<BookPath>,
-    State(app_state): State<routes::app::AppState>,
+    lang_id: u64,
+    app_state: routes::app::AppState,
     headers: HeaderMap,
-    OriginalUri(uri): OriginalUri,
-) -> Result<impl IntoResponse, TeraRenderError> {
-    let lang_id = extract_id(&p.id).ok_or(TeraRenderError::InvalidId)?;
+    uri: Uri,
+) -> Result<Response, TeraRenderError> {
     let source_lang_id = get_config().source_id(lang_id);
     if source_lang_id == 0 {
         return Err(TeraRenderError::InvalidId);
@@ -113,5 +142,5 @@ pub(crate) async fn get_lang(
     Ok((
         [(axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8")],
         html,
-    ))
+    ).into_response())
 }

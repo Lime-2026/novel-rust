@@ -8,7 +8,7 @@
   "enable_down": true,
   "theme_dir": "default",
   "commend_ids": "1,2,3,4,9,10,77,51,154,645,14,545",
-  "is_3in1": false,
+  "is_3in1": true,
   "category_per_page": 20,
   "read_page_split_lines": 50,
   "vote_perday": 5,
