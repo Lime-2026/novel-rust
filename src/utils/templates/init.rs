@@ -2,8 +2,8 @@ use std::fs;
 use std::sync::Arc;
 use tera::{Result as TeraResult, Tera};
 use crate::utils::db::conn::{DB_CONN};
-use crate::utils::templates::db::DbQueryTag;
-use crate::utils::templates::str::{AdsFunction, GETConfigFunction, LinkFunction, RewriterFunction, SortArrayFunction, StatCodeFunction, SubstrFunction, TimeFunction};
+use crate::utils::templates::db::{DbQueryTag, RawNovel};
+use crate::utils::templates::str::{AdsFunction, GETConfigFunction, LinkFunction, RandomStringFunction, RewriterFunction, SortArrayFunction, StatCodeFunction, SubstrFunction, TimeFunction};
 
 /// --------------------------
 /// 初始化Tera模板引擎（全局复用）
@@ -22,6 +22,8 @@ pub fn init_tera() -> TeraResult<Arc<Tera>> {
     tera.register_function("ads",AdsFunction);
     tera.register_function("stat_code",StatCodeFunction);
     tera.register_function("link",LinkFunction);
+    tera.register_function("raw_novel",RawNovel);
+    tera.register_function("random_string",RandomStringFunction);
     Ok(Arc::new(tera))
 }
 

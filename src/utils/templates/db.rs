@@ -9,9 +9,66 @@ use tokio::runtime::Runtime;
 
 use sea_orm::sqlx::{Column, Row, TypeInfo};
 use tera::{Error as TeraError, Function, Result as TeraResult, Value as TeraValue};
+use crate::services::novel::query_novel_process;
+use crate::utils::conf::get_config;
+use crate::utils::redis::conn::get_cache_rows;
 
 pub static TOKIO_RT: Lazy<Runtime> =
     Lazy::new(|| Runtime::new().expect("创建 Tokio 全局运行时失败"));
+
+#[derive(Clone)]
+pub struct RawNovel;
+
+/// 通过sql语句查询小说数据库表 并返回查询结果和redis缓存
+///
+/// # 参数
+///
+/// - `sql`: sql语句 {table}表示表名 {field}表示查询字段
+/// - `cache`: 是否缓存这个结果 (bool类型 可选 默认true)
+/// - `url`: 传入当前调用host 也就是传 SITE_URL 标签
+///
+/// # 提示
+/// 不会对你传入的sql进行安全处理，所以请确保你的sql语句无注入风险
+/// 高并发下性能不是太理想 如无必要别用这个语句
+impl Function for RawNovel {
+    fn call(&self, args: &HashMap<String, Value>) -> TeraResult<Value>{
+        let sql = args
+            .get("sql")
+            .ok_or_else(|| tera::Error::msg("缺少必选参数 sql（查询语句）"))?
+            .as_str()
+            .ok_or_else(|| tera::Error::msg("sql 参数必须是字符串类型"))?;
+        let url = args
+            .get("url")
+            .ok_or_else(|| tera::Error::msg("缺少必选参数 url（当前host）"))?
+            .as_str()
+            .ok_or_else(|| tera::Error::msg("url 参数必须是字符串类型"))?;
+        let cache = args
+            .get("cache")
+            .map(|v| v.as_bool().ok_or(tera::Error::msg("cache 必须是bool类型")))
+            .transpose()?
+            .unwrap_or(true);
+        let table = format!("{}article_article",get_config().prefix);
+        let sqlx = sql.replace("{table}", &*table).replace("{field}",get_config().get_field().as_str());
+        let rows = TOKIO_RT
+            .block_on(async move {
+                if cache {
+                    get_cache_rows(
+                        sqlx,
+                        url,
+                        get_config().cache.home as u64,
+                        None,
+                    ).await
+                } else {
+                    query_novel_process(sqlx.as_str(),None).await.unwrap_or_else(|_| Vec::new())
+                }
+            });
+        Ok(
+            serde_json::json!(
+                rows
+            )
+        )
+    }
+}
 
 #[derive(Clone)]
 pub struct DbQueryTag {

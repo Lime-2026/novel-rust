@@ -2,6 +2,55 @@ use std::collections::HashMap;
 use chrono::{Local, TimeZone};
 use tera::{Function, Result as TeraResult, Value};
 use crate::utils::conf::get_config;
+use rand::prelude::*;
+
+const RANDOM_CHARS: [char; 36] = [
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+];
+const RANDOM_LETTER_CHARS: [char; 62] = [
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+];
+
+/// 随机数
+///
+/// # 用法
+/// - `length` 随机长度 (默认长度5)
+/// - `letter` 大写字符是否参与随机 (默认true)
+pub struct RandomStringFunction;
+impl Function for RandomStringFunction {
+    fn call(&self, args: &HashMap<String, Value>) -> TeraResult<Value> {
+        let letter = args
+            .get("letter")
+            .map(|v| v.as_bool().ok_or(tera::Error::msg("letter 必须是bool类型")))
+            .transpose()?
+            .unwrap_or(true);
+        let length = args
+            .get("length")
+            .map(|v| v.as_u64().ok_or(tera::Error::msg("length 必须是number类型")))
+            .transpose()?
+            .unwrap_or(5) as usize;
+        let mut rng = rand::rng();
+        let mut result = String::with_capacity(length);
+        if letter {
+            for _ in 0..length {
+                let c = RANDOM_LETTER_CHARS.choose(&mut rng).unwrap();
+                result.push(*c);
+            }
+        } else {
+            for _ in 0..length {
+                let c = RANDOM_CHARS.choose(&mut rng).unwrap();
+                result.push(*c);
+            }
+        }
+        Ok(Value::String(result))
+    }
+}
 
 pub struct LinkFunction;
 impl Function for LinkFunction {
