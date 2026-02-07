@@ -4,13 +4,14 @@ use axum::http::header::HOST;
 use axum::response::IntoResponse;
 use sea_orm::{Value, Values};
 use serde::{Deserialize};
-use crate::{routes, services, utils};
+use crate::{routes, services};
 use crate::handlers::index_list::IndexListPageUrl;
-use crate::services::novel::generate_pagination_numbers;
+use crate::services::novel::{generate_pagination_numbers,extract_str,extract_id};
 use crate::utils::conf::get_config;
 use crate::utils::file::file_exists;
 use crate::utils::templates::render;
 use crate::utils::templates::render::TeraRenderError;
+use crate::utils::redis::conn::{get_cache_rows,get_cache_count};
 
 #[derive(Deserialize)]
 pub(crate) struct SortPath {
@@ -32,12 +33,12 @@ pub(crate) async fn get_sort(
     #[allow(unused)] let mut sort_id = get_config().sort_arr.len().saturating_sub(1);
     let mut page = 1;
     if let Some(sid) = p.page {
-        page = services::novel::extract_id(&sid).ok_or(TeraRenderError::InvalidId)?;
+        page = extract_id(&sid).ok_or(TeraRenderError::InvalidId)?;
     }
     if get_config().rewrite.sort_url.contains("{id}") {
-        sort_id = services::novel::extract_id(&code).ok_or(TeraRenderError::InvalidId)? as usize;
+        sort_id = extract_id(&code).ok_or(TeraRenderError::InvalidId)? as usize;
     } else {
-        code = services::novel::extract_str(&code).ok_or(TeraRenderError::InvalidId)?.parse().unwrap();
+        code = extract_str(&code).ok_or(TeraRenderError::InvalidId)?.parse().unwrap();
         sort_id = get_config().sort_arr.iter()
             .position(|s| s.code == code)
             .ok_or(TeraRenderError::InvalidId)?;
@@ -51,17 +52,20 @@ pub(crate) async fn get_sort(
         .unwrap_or("unknown.host");
     let sort = &get_config().sort_arr[sort_id];
     let offset = (page - 1).saturating_mul(get_config().category_per_page as u64);
-    let count = utils::redis::conn::get_cache_count(
+    let count = get_cache_count(
         format!("SELECT COUNT(*) AS cnt FROM {table}article_article WHERE {where} AND sortid = ?;", table = get_config().prefix, where = get_config().get_where()),
         url,
         get_config().cache.sort as u64,
         Some(Values(vec![Value::TinyInt(Some((sort_id + 1) as i8))])),
     ).await;
-    let max_page = count.div_ceil(get_config().category_per_page as u64).max(1);
+    let mut max_page = count.div_ceil(get_config().category_per_page as u64).max(1);
+    if get_config().category_max_page > 0 && max_page > get_config().category_max_page {    // 如果启用了访问深度 则此处生效
+        max_page = get_config().category_max_page;
+    }
     if page > max_page {    // 如不需要超出边界404 可注释
         return Err(TeraRenderError::InvalidId);
     }
-    let rows = utils::redis::conn::get_cache_rows(
+    let rows = get_cache_rows(
         format!("SELECT {filed} FROM {table}article_article WHERE {where} AND sortid = ? ORDER BY lastupdate DESC LIMIT {limit} OFFSET ?;", filed = get_config().get_field(), table = get_config().prefix, where = get_config().get_where(), limit = get_config().category_per_page),
         url,
         get_config().cache.sort as u64,

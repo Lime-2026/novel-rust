@@ -285,6 +285,10 @@
             <input type="number" id="category_per_page" class="form-control" min="1" value="20">
         </div>
         <div class="form-group">
+            <label class="form-label">分类页访问深度：</label>
+            <input type="number" id="category_max_page" class="form-control" min="0" value="0" placeholder="0为不限制访问多少页">
+        </div>
+        <div class="form-group">
             <label class="form-label">章节分页模式：</label>
             <select id="read_page_split_mode" class="form-control">
                 <option value="0">不启用</option>
@@ -332,11 +336,15 @@
         </div>
         <div class="form-group">
             <label class="form-label">敏感词过滤：</label>
-            <input type="text" id="filter" class="form-control" placeholder="例如：敏感词1|敏感词2（暂未兼容）">
+            <input type="checkbox" id="is_filter" class="checkbox-control">
+        </div>
+        <div class="form-group">
+            <label class="form-label">敏感词过滤：</label>
+            <textarea id="filter" rows="4" class="form-control" placeholder="一行一个(如需替换用$$$标识 示范 百度$$$谷歌 [百度替换成谷歌])"></textarea>
         </div>
         <div class="form-group">
             <label class="form-label">友情链接（HTML）：</label>
-            <textarea id="link" class="form-control" rows="3" placeholder='例如：<a href="www.baidu.com" target="_blank">百度</a>'></textarea>
+            <textarea id="link" class="form-control" rows="4" placeholder='例如：<a href="www.baidu.com" target="_blank">百度</a>'></textarea>
         </div>
         <div class="form-group">
             <label class="form-label">章节报错：</label>
@@ -592,6 +600,7 @@
             document.getElementById('commend_ids').value = config.commend_ids || '';
             document.getElementById('is_3in1').checked = config.is_3in1 || false;
             document.getElementById('category_per_page').value = config.category_per_page || 20;
+            document.getElementById('category_max_page').value = config.category_max_page || 0;
             document.getElementById('read_page_split_mode').value = config.read_page_split_mode || 1;
             document.getElementById('read_page_split_lines').value = config.read_page_split_lines || 50;
             document.getElementById('vote_perday').value = config.vote_perday || 5;
@@ -601,6 +610,7 @@
             document.getElementById('is_multiple').checked = config.is_multiple || false;
             document.getElementById('confusion_value').value = config.confusion_value || 12;
             document.getElementById('confusion_algorithm').value = config.confusion_algorithm || '^';
+            document.getElementById('is_filter').checked = config.is_filter || false;
             document.getElementById('filter').value = config.filter || '';
             document.getElementById('link').value = config.link || '';
             document.getElementById('is_report').checked = config.is_report || false;
@@ -697,6 +707,7 @@
                 commend_ids: document.getElementById('commend_ids').value.trim(),
                 is_3in1: document.getElementById('is_3in1').checked,
                 category_per_page: parseInt(document.getElementById('category_per_page').value),
+                category_max_page: parseInt(document.getElementById('category_max_page').value),
                 read_page_split_mode: parseInt(document.getElementById('read_page_split_mode').value),
                 read_page_split_lines: parseInt(document.getElementById('read_page_split_lines').value),
                 vote_perday: parseInt(document.getElementById('vote_perday').value),
@@ -706,6 +717,7 @@
                 is_multiple: document.getElementById('is_multiple').checked,
                 confusion_value: parseInt(document.getElementById('confusion_value').value),
                 confusion_algorithm: document.getElementById('confusion_algorithm').value,
+                is_filter: document.getElementById('is_filter').checked,
                 filter: document.getElementById('filter').value.trim(),
                 link: document.getElementById('link').value.trim(),
                 is_report: document.getElementById('is_report').checked,

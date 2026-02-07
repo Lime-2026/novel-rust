@@ -33,6 +33,8 @@ pub struct Config {
     pub(crate) is_lang: bool,
     pub(crate) ads: Vec<Ads>,
     pub(crate) stat_code: String,
+    pub(crate) category_max_page: u64,
+    pub(crate) is_filter: bool,
 }
 
 impl Config {

@@ -84,10 +84,10 @@ pub(crate) async fn read_file(path_or_url: &str) -> String {
 
 pub fn read_txt_to_utf8<P: AsRef<Path>>(path: P) -> io::Result<String> {
     let bytes = std::fs::read(path)?;
-    if let Ok(s) = std::str::from_utf8(&bytes) {
-        let s = s.strip_prefix('\u{feff}').unwrap_or(s);
-        return Ok(s.to_owned());
-    }
+    // if let Ok(s) = std::str::from_utf8(&bytes) {
+    //     // let s = s.strip_prefix('\u{feff}').unwrap_or(s);
+    //     return Ok(s.to_owned());
+    // }
     decode_bytes_with_encoding(&bytes, GBK)
 }
 

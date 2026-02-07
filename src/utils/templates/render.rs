@@ -2,6 +2,7 @@ use std::sync::Arc;
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Response};
 use tera::{Context, Tera};
+use crate::utils::conf::{get_config, multi_replace};
 
 #[derive(Debug)]
 pub enum TeraRenderError {
@@ -39,23 +40,15 @@ pub(crate) async fn render_template(
     ctx: Context,
 ) -> Result<Html<String>, TeraRenderError> {
     let template_name = template_name.into();
-    // 真到了并发很猛的时候再启用
-    // let html = tokio::task::spawn_blocking(move || {
-    //     tera.render(&template_name, &ctx)
-    //         .map_err(|e| {
-    //             let detail = format_tera_error(&e);
-    //             eprintln!("Tera render error detail:\n{}", detail);
-    //             TeraRenderError(e.to_string())
-    //         })
-    // })
-    //     .await
-    //     .map_err(|e| TeraRenderError(format!("Task join error: {}", e)))??;
     let html = tera.render(&template_name, &ctx)
         .map_err(|e| {
             let detail = format_tera_error(&e);
             eprintln!("Tera render error detail:\n{}", detail);
             TeraRenderError::Render(e.to_string())
         })?;
+    if get_config().is_filter {
+        let filter_html = multi_replace(&html);
+        return Ok(Html(filter_html))
+    }
     Ok(Html(html))
 }
-
